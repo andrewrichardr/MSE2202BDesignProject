@@ -9,6 +9,7 @@ unsigned int prevMillis;
 unsigned int interval = 100;
 int LED[4] = {7, 6, 5, 4};
 int numLeds = 4;
+
 Servo servo1;
 
 void setup()
