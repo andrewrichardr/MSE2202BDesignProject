@@ -1,4 +1,4 @@
-unsigned long milliseconds;
+unsigned long meas;
 unsigned long potPos;
 int a=0;
 int b=0;
@@ -27,12 +27,12 @@ void loop()
   Serial.println(interval);
   if(digitalRead(3)){
     while(!digitalRead(2) && interval < 1000){
-      milliseconds = 1;
+      meas = 1;
       while(!digitalRead(2)){
-        Serial.println(milliseconds++);
+        Serial.println(meas++);
       }
     }
-    interval = milliseconds/(unsigned long)10;
+    interval = meas/(unsigned long)10;
   }
   else {
     potPos = analogRead(0);

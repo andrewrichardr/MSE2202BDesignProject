@@ -1,5 +1,5 @@
 #include <Servo.h>
-unsigned long milliseconds;
+unsigned long milliseconds=1;
 unsigned long potPos;
 int a=0;
 int b=0;
@@ -27,12 +27,9 @@ void setup()
 
 void loop()
 {
-  Serial.println("Int:");
-  Serial.println(interval);
-  if(digitalRead(3)){
+  if(0){
     while(!digitalRead(2) && interval < 1000){
-      milliseconds = 1;
-      while(!digitalRead(2)){
+      if(!digitalRead(2)){
         Serial.println(milliseconds++);
       }
     }
@@ -47,8 +44,14 @@ void loop()
   if(currMillis - prevMillis >= interval)
   {
     prevMillis = currMillis;
-    incrementState();
+    //incrementState();
   }
+
+
+potPos = analogRead(0);
+Serial.println(potPos);
+servo1.write(180*potPos/(unsigned long)1023);
+
 }
 
 void incrementState()
