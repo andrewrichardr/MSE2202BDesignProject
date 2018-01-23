@@ -11,9 +11,9 @@
  */
 
 #include <Servo.h>
+#include <CharliePlexM.h>
 #include <EEPROM.h>
 #include <uSTimer2.h>
-#include <CharliePlexM.h>
 #include <Wire.h>
 #include <I2CEncoder.h>
 
