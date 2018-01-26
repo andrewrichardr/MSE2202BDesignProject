@@ -293,31 +293,43 @@ void loop()
          possibly encoder counts.
        /*************************************************************************************/
 
+        while(1){
+            // statement
 
+	        if((ui_Left_Line_Tracker_Data < (ui_Left_Line_Tracker_Dark - ui_Line_Tracker_Tolerance)) 
+	        && (ui_Middle_Line_Tracker_Data > (ui_Middle_Line_Tracker_Dark - ui_Line_Tracker_Tolerance)) 
+	        && (ui_Right_Line_Tracker_Data < (ui_Right_Line_Tracker_Dark - ui_Line_Tracker_Tolerance))) {
+	            //Go Forward
+	          servo_LeftMotor.writeMicroseconds(ui_Left_Motor_Speed);
+	          servo_RightMotor.writeMicroseconds(ui_Right_Motor_Speed);
+	        }
 
-        if((ui_Left_Line_Tracker_Data < (ui_Left_Line_Tracker_Dark - ui_Line_Tracker_Tolerance)) && (ui_Middle_Line_Tracker_Data > (ui_Middle_Line_Tracker_Dark - ui_Line_Tracker_Tolerance)) && (ui_Right_Line_Tracker_Data < (ui_Right_Line_Tracker_Dark - ui_Line_Tracker_Tolerance))) {
-            //Go Forward
-          servo_LeftMotor.writeMicroseconds(ui_Left_Motor_Speed);
-          servo_RightMotor.writeMicroseconds(ui_Right_Motor_Speed);
-        }
+	        if((ui_Left_Line_Tracker_Data > (ui_Left_Line_Tracker_Dark - ui_Line_Tracker_Tolerance)) 
+	        && (ui_Middle_Line_Tracker_Data < (ui_Middle_Line_Tracker_Dark - ui_Line_Tracker_Tolerance)) 
+	        && (ui_Right_Line_Tracker_Data < (ui_Right_Line_Tracker_Dark - ui_Line_Tracker_Tolerance))) {
+	          //Go Right
+	          servo_LeftMotor.writeMicroseconds(ui_Left_Motor_Speed/2);
+	          servo_RightMotor.writeMicroseconds(ui_Right_Motor_Speed);
+	        }
 
-        if((ui_Left_Line_Tracker_Data > (ui_Left_Line_Tracker_Dark - ui_Line_Tracker_Tolerance)) && (ui_Middle_Line_Tracker_Data < (ui_Middle_Line_Tracker_Dark - ui_Line_Tracker_Tolerance)) && (ui_Right_Line_Tracker_Data < (ui_Right_Line_Tracker_Dark - ui_Line_Tracker_Tolerance))) {
-          //Go Right
-          servo_LeftMotor.writeMicroseconds(ui_Left_Motor_Speed/2);
-          servo_RightMotor.writeMicroseconds(ui_Right_Motor_Speed);
-        }
+	        if((ui_Left_Line_Tracker_Data < (ui_Left_Line_Tracker_Dark - ui_Line_Tracker_Tolerance)) 
+	        && (ui_Middle_Line_Tracker_Data < (ui_Middle_Line_Tracker_Dark - ui_Line_Tracker_Tolerance)) 
+	        && (ui_Right_Line_Tracker_Data > (ui_Right_Line_Tracker_Dark - ui_Line_Tracker_Tolerance))) {
+	            //Go Left
+	          servo_LeftMotor.writeMicroseconds(ui_Left_Motor_Speed);
+	          servo_RightMotor.writeMicroseconds(ui_Right_Motor_Speed/2);
+	        }
 
-        if((ui_Left_Line_Tracker_Data < (ui_Left_Line_Tracker_Dark - ui_Line_Tracker_Tolerance)) && (ui_Middle_Line_Tracker_Data < (ui_Middle_Line_Tracker_Dark - ui_Line_Tracker_Tolerance)) && (ui_Right_Line_Tracker_Data > (ui_Right_Line_Tracker_Dark - ui_Line_Tracker_Tolerance))) {
-            //Go Left
-          servo_LeftMotor.writeMicroseconds(ui_Left_Motor_Speed);
-          servo_RightMotor.writeMicroseconds(ui_Right_Motor_Speed/2);
-        }
+	        if((ui_Left_Line_Tracker_Data < (ui_Left_Line_Tracker_Dark - ui_Line_Tracker_Tolerance)) 
+	        && (ui_Middle_Line_Tracker_Data < (ui_Middle_Line_Tracker_Dark - ui_Line_Tracker_Tolerance)) 
+	        && (ui_Right_Line_Tracker_Data < (ui_Right_Line_Tracker_Dark - ui_Line_Tracker_Tolerance))) {
+	            //Go Stop
+	          servo_LeftMotor.writeMicroseconds(ci_Left_Motor_Stop);
+	          servo_RightMotor.writeMicroseconds(ci_Right_Motor_Stop);
+	          break;
+	        }
 
-        if((ui_Left_Line_Tracker_Data < (ui_Left_Line_Tracker_Dark - ui_Line_Tracker_Tolerance)) && (ui_Middle_Line_Tracker_Data < (ui_Middle_Line_Tracker_Dark - ui_Line_Tracker_Tolerance)) && (ui_Right_Line_Tracker_Data < (ui_Right_Line_Tracker_Dark - ui_Line_Tracker_Tolerance))) {
-            //Go Stop
-          servo_LeftMotor.writeMicroseconds(ci_Left_Motor_Stop);
-          servo_RightMotor.writeMicroseconds(ci_Right_Motor_Stop);
-        }
+    	}
 
 
         if(bt_Motors_Enabled)
