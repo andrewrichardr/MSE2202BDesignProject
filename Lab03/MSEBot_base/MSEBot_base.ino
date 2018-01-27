@@ -11,9 +11,9 @@
  */
 
 #include <Servo.h>
-#include <CharliePlexM.h>
 #include <EEPROM.h>
 #include <uSTimer2.h>
+#include <CharliePlexM.h>
 #include <Wire.h>
 #include <I2CEncoder.h>
 
@@ -28,12 +28,12 @@ I2CEncoder encoder_LeftMotor;
 // Uncomment keywords to enable debugging output
 
 #define DEBUG_MODE_DISPLAY
-#define DEBUG_MOTORS
-#define DEBUG_LINE_TRACKERS
-#define DEBUG_ENCODERS
-#define DEBUG_ULTRASONIC
-#define DEBUG_LINE_TRACKER_CALIBRATION
-#define DEBUG_MOTOR_CALIBRATION
+//#define DEBUG_MOTORS
+//#define DEBUG_LINE_TRACKERS
+//#define DEBUG_ENCODERS
+//#define DEBUG_ULTRASONIC
+//#define DEBUG_LINE_TRACKER_CALIBRATION
+//#define DEBUG_MOTOR_CALIBRATION
 
 boolean bt_Motors_Enabled = true;
 
@@ -93,7 +93,7 @@ const int ci_Arm_Servo_Extended = 120;      //  "
 const int ci_Display_Time = 500;
 const int ci_Line_Tracker_Calibration_Interval = 100;
 const int ci_Line_Tracker_Cal_Measures = 20;
-const int ci_Line_Tracker_Tolerance = 50;   // May need to adjust this
+const int ci_Line_Tracker_Tolerance = 150;   // May need to adjust this
 const int ci_Motor_Calibration_Cycles = 3;
 const int ci_Motor_Calibration_Time = 5000;
 
@@ -104,7 +104,7 @@ unsigned long ul_Echo_Time;
 unsigned int ui_Left_Line_Tracker_Data;
 unsigned int ui_Middle_Line_Tracker_Data;
 unsigned int ui_Right_Line_Tracker_Data;
-unsigned int ui_Motors_Speed = 1900;        // Default run speed
+unsigned int ui_Motors_Speed = 1800;        // Default run speed
 unsigned int ui_Left_Motor_Speed;
 unsigned int ui_Right_Motor_Speed;
 long l_Left_Motor_Position;
@@ -150,7 +150,7 @@ boolean bt_Do_Once = false;
 boolean bt_Cal_Initialized = false;
 
 void setup() {
-  Wire.begin();	      // Wire library required for I2CEncoder library
+  Wire.begin();       // Wire library required for I2CEncoder library
   Serial.begin(9600);
 
   CharliePlexM::setBtn(ci_Charlieplex_LED1,ci_Charlieplex_LED2,
@@ -293,55 +293,53 @@ void loop()
          possibly encoder counts.
        /*************************************************************************************/
 
-        while(1){
-            // statement
+          if((ui_Left_Line_Tracker_Data < (ui_Left_Line_Tracker_Dark - ui_Line_Tracker_Tolerance)) 
+          && (ui_Middle_Line_Tracker_Data > (ui_Middle_Line_Tracker_Dark - ui_Line_Tracker_Tolerance)) 
+          && (ui_Right_Line_Tracker_Data < (ui_Right_Line_Tracker_Dark - ui_Line_Tracker_Tolerance))) {
+              //Go Forward
+            servo_LeftMotor.writeMicroseconds(ui_Left_Motor_Speed);
+            servo_RightMotor.writeMicroseconds(ui_Right_Motor_Speed);
+            Serial.println("Forward");
+          }
 
-	        if((ui_Left_Line_Tracker_Data < (ui_Left_Line_Tracker_Dark - ui_Line_Tracker_Tolerance)) 
-	        && (ui_Middle_Line_Tracker_Data > (ui_Middle_Line_Tracker_Dark - ui_Line_Tracker_Tolerance)) 
-	        && (ui_Right_Line_Tracker_Data < (ui_Right_Line_Tracker_Dark - ui_Line_Tracker_Tolerance))) {
-	            //Go Forward
-	          servo_LeftMotor.writeMicroseconds(ui_Left_Motor_Speed);
-	          servo_RightMotor.writeMicroseconds(ui_Right_Motor_Speed);
-	        }
+          if((ui_Left_Line_Tracker_Data > (ui_Left_Line_Tracker_Dark - ui_Line_Tracker_Tolerance)) 
+          && (ui_Middle_Line_Tracker_Data < (ui_Middle_Line_Tracker_Dark - ui_Line_Tracker_Tolerance)) 
+          && (ui_Right_Line_Tracker_Data < (ui_Right_Line_Tracker_Dark - ui_Line_Tracker_Tolerance))) {
+              //Go Left
+            servo_LeftMotor.writeMicroseconds(ui_Left_Motor_Speed);
+            servo_RightMotor.writeMicroseconds(ci_Right_Motor_Stop);
+            Serial.println("Left");
+          }
 
-	        if((ui_Left_Line_Tracker_Data > (ui_Left_Line_Tracker_Dark - ui_Line_Tracker_Tolerance)) 
-	        && (ui_Middle_Line_Tracker_Data < (ui_Middle_Line_Tracker_Dark - ui_Line_Tracker_Tolerance)) 
-	        && (ui_Right_Line_Tracker_Data < (ui_Right_Line_Tracker_Dark - ui_Line_Tracker_Tolerance))) {
-	          //Go Right
-	          servo_LeftMotor.writeMicroseconds(ui_Left_Motor_Speed/2);
-	          servo_RightMotor.writeMicroseconds(ui_Right_Motor_Speed);
-	        }
+          if((ui_Left_Line_Tracker_Data < (ui_Left_Line_Tracker_Dark - ui_Line_Tracker_Tolerance)) 
+          && (ui_Middle_Line_Tracker_Data < (ui_Middle_Line_Tracker_Dark - ui_Line_Tracker_Tolerance)) 
+          && (ui_Right_Line_Tracker_Data > (ui_Right_Line_Tracker_Dark - ui_Line_Tracker_Tolerance))) {
+                          //Go Right
+            servo_LeftMotor.writeMicroseconds(ci_Left_Motor_Stop);
+            servo_RightMotor.writeMicroseconds(ui_Right_Motor_Speed);
+            Serial.println("Right");
+          }
 
-	        if((ui_Left_Line_Tracker_Data < (ui_Left_Line_Tracker_Dark - ui_Line_Tracker_Tolerance)) 
-	        && (ui_Middle_Line_Tracker_Data < (ui_Middle_Line_Tracker_Dark - ui_Line_Tracker_Tolerance)) 
-	        && (ui_Right_Line_Tracker_Data > (ui_Right_Line_Tracker_Dark - ui_Line_Tracker_Tolerance))) {
-	            //Go Left
-	          servo_LeftMotor.writeMicroseconds(ui_Left_Motor_Speed);
-	          servo_RightMotor.writeMicroseconds(ui_Right_Motor_Speed/2);
-	        }
-
-	        if((ui_Left_Line_Tracker_Data < (ui_Left_Line_Tracker_Dark - ui_Line_Tracker_Tolerance)) 
-	        && (ui_Middle_Line_Tracker_Data < (ui_Middle_Line_Tracker_Dark - ui_Line_Tracker_Tolerance)) 
-	        && (ui_Right_Line_Tracker_Data < (ui_Right_Line_Tracker_Dark - ui_Line_Tracker_Tolerance))) {
-	            //Go Stop
-	          servo_LeftMotor.writeMicroseconds(ci_Left_Motor_Stop);
-	          servo_RightMotor.writeMicroseconds(ci_Right_Motor_Stop);
-	          break;
-	        }
-
-    	}
+          if((ui_Left_Line_Tracker_Data < (ui_Left_Line_Tracker_Dark - ui_Line_Tracker_Tolerance)) 
+          && (ui_Middle_Line_Tracker_Data < (ui_Middle_Line_Tracker_Dark - ui_Line_Tracker_Tolerance)) 
+          && (ui_Right_Line_Tracker_Data < (ui_Right_Line_Tracker_Dark - ui_Line_Tracker_Tolerance))) {
+              //Go Stop
+            servo_LeftMotor.writeMicroseconds(ci_Left_Motor_Stop);
+            servo_RightMotor.writeMicroseconds(ci_Right_Motor_Stop);
+            Serial.println("Stop");
+          }
 
 
-        if(bt_Motors_Enabled)
-        {
-          servo_LeftMotor.writeMicroseconds(ui_Left_Motor_Speed);
-          servo_RightMotor.writeMicroseconds(ui_Right_Motor_Speed);
-        }
-        else
-        {  
-          servo_LeftMotor.writeMicroseconds(ci_Left_Motor_Stop); 
-          servo_RightMotor.writeMicroseconds(ci_Right_Motor_Stop); 
-        }
+        //if(bt_Motors_Enabled)
+        //{
+        //  servo_LeftMotor.writeMicroseconds(ui_Left_Motor_Speed);
+        //  servo_RightMotor.writeMicroseconds(ui_Right_Motor_Speed);
+        //}
+        //else
+        //{  
+        //  servo_LeftMotor.writeMicroseconds(ci_Left_Motor_Stop); 
+        //  servo_RightMotor.writeMicroseconds(ci_Right_Motor_Stop); 
+        //}
 #ifdef DEBUG_MOTORS
         Serial.print("Motors enabled: ");
         Serial.print(bt_Motors_Enabled);
@@ -600,7 +598,6 @@ void Ping()
   Serial.println(ul_Echo_Time/58); //divide time by 58 to get distance in cm 
 #endif
 }  
-
 
 
 
