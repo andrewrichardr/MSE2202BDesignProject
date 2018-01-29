@@ -296,37 +296,29 @@ void loop()
           if((ui_Left_Line_Tracker_Data < (ui_Left_Line_Tracker_Dark - ui_Line_Tracker_Tolerance)) 
           && (ui_Middle_Line_Tracker_Data > (ui_Middle_Line_Tracker_Dark - ui_Line_Tracker_Tolerance)) 
           && (ui_Right_Line_Tracker_Data < (ui_Right_Line_Tracker_Dark - ui_Line_Tracker_Tolerance))) {
-              //Go Forward
-            servo_LeftMotor.writeMicroseconds(ui_Left_Motor_Speed);
-            servo_RightMotor.writeMicroseconds(ui_Right_Motor_Speed);
-            Serial.println("Forward");
+            //Go Forward
+            goForward();
           }
 
           if((ui_Left_Line_Tracker_Data > (ui_Left_Line_Tracker_Dark - ui_Line_Tracker_Tolerance)) 
           && (ui_Middle_Line_Tracker_Data < (ui_Middle_Line_Tracker_Dark - ui_Line_Tracker_Tolerance)) 
           && (ui_Right_Line_Tracker_Data < (ui_Right_Line_Tracker_Dark - ui_Line_Tracker_Tolerance))) {
-              //Go Left
-            servo_LeftMotor.writeMicroseconds(ui_Left_Motor_Speed);
-            servo_RightMotor.writeMicroseconds(ci_Right_Motor_Stop);
-            Serial.println("Left");
+            //Go Left
+            goLeft();
           }
 
           if((ui_Left_Line_Tracker_Data < (ui_Left_Line_Tracker_Dark - ui_Line_Tracker_Tolerance)) 
           && (ui_Middle_Line_Tracker_Data < (ui_Middle_Line_Tracker_Dark - ui_Line_Tracker_Tolerance)) 
           && (ui_Right_Line_Tracker_Data > (ui_Right_Line_Tracker_Dark - ui_Line_Tracker_Tolerance))) {
-                          //Go Right
-            servo_LeftMotor.writeMicroseconds(ci_Left_Motor_Stop);
-            servo_RightMotor.writeMicroseconds(ui_Right_Motor_Speed);
-            Serial.println("Right");
+            //Go Right
+            goRight();
           }
 
           if((ui_Left_Line_Tracker_Data < (ui_Left_Line_Tracker_Dark - ui_Line_Tracker_Tolerance)) 
           && (ui_Middle_Line_Tracker_Data < (ui_Middle_Line_Tracker_Dark - ui_Line_Tracker_Tolerance)) 
           && (ui_Right_Line_Tracker_Data < (ui_Right_Line_Tracker_Dark - ui_Line_Tracker_Tolerance))) {
-              //Go Stop
-            servo_LeftMotor.writeMicroseconds(ci_Left_Motor_Stop);
-            servo_RightMotor.writeMicroseconds(ci_Right_Motor_Stop);
-            Serial.println("Stop");
+              //Intersection -- default turn left
+            goLeft();
           }
 
 
@@ -598,6 +590,31 @@ void Ping()
   Serial.println(ul_Echo_Time/58); //divide time by 58 to get distance in cm 
 #endif
 }  
+
+void goForward() {
+  servo_LeftMotor.writeMicroseconds(ui_Left_Motor_Speed);
+  servo_RightMotor.writeMicroseconds(ui_Right_Motor_Speed);
+  Serial.println("Forward");
+}
+
+void goLeft() {
+  servo_LeftMotor.writeMicroseconds(ui_Left_Motor_Speed);
+  servo_RightMotor.writeMicroseconds(ci_Right_Motor_Stop);
+  Serial.println("Left");
+}
+
+void goRight() {
+  servo_LeftMotor.writeMicroseconds(ci_Left_Motor_Stop);
+  servo_RightMotor.writeMicroseconds(ui_Right_Motor_Speed);
+  Serial.println("Right");
+}
+
+void stop() {
+  servo_LeftMotor.writeMicroseconds(ci_Left_Motor_Stop);
+  servo_RightMotor.writeMicroseconds(ci_Right_Motor_Stop);
+  Serial.println("Stop");
+}
+
 
 
 
