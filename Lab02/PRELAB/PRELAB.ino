@@ -1,6 +1,6 @@
 int LED[4] = {7, 6, 5, 4};
 int numLeds = 4;
-int interval = 100;
+int interval = 20;
   
 void setup() {
   int sizel = 4;//sizeof(LED)/sizeof(LED[0]);

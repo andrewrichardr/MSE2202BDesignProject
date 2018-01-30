@@ -1,0 +1,4 @@
+Add "https://raw.githubusercontent.com/stm32duino/BoardManagerFiles/master/STM32/package_stm_index.json" to File->Preferences->Additional Boards Manager URLs"
+Tools->Board->Board Manager: Install "Arduino SAM Boards, Arduino SAMD Boards" (This installs arm-none-eabi-gcc toolchain), then install "STM32 Cores" by "ST-Microelectronics"
+
+This package supports the following STM32 Based dev-kits: Nucleo: F207ZG, F429ZI, F030R8, F091RC, F103RB, F302R8, F303RE, F401RE, F411RE, L053R8, L152RE, L476RG, L432KC, F303K8, Discovery: F407G, F746G, L475VG, L072CZ

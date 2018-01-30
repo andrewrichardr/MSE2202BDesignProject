@@ -4,7 +4,7 @@ unsigned long potPos;
 bool fwd=1;
 unsigned int currMillis;
 unsigned int prevMillis;
-unsigned int interval = 100;
+unsigned int interval = 50;
 int LED[4] = {7, 6, 5, 4};
 int numLeds = 4;
 
