@@ -35,7 +35,17 @@ I2CEncoder encoder_LeftMotor;
 //#define DEBUG_LINE_TRACKER_CALIBRATION
 //#define DEBUG_MOTOR_CALIBRATION
 
+boolean deadEnd = false;
+unsigned int deadFwd = 0;
+unsigned int deadRev = 0;
+unsigned int deadEndCount = 0;
+unsigned int deadEndReset = 0;
+
 boolean bt_Motors_Enabled = true;
+
+unsigned long startTime = 0;
+unsigned long currentTime = 0;
+unsigned long totalDist = 0;
 
 //port pin constants
 const int ci_Ultrasonic_Ping = 2;   //input plug
@@ -216,6 +226,8 @@ void setup() {
   ui_Right_Motor_Offset = word(b_HighByte, b_LowByte);
 }
 
+int run = 1;
+
 void loop()
 {
   if((millis() - ul_3_Second_timer) > 3000)
@@ -264,6 +276,7 @@ void loop()
       encoder_LeftMotor.zero();
       encoder_RightMotor.zero();
       ui_Mode_Indicator_Index = 0;
+      totalDist = 0;
       break;
     } 
   
@@ -293,11 +306,17 @@ void loop()
          possibly encoder counts.
        /*************************************************************************************/
 
+
+          if(millis() - deadEndReset > 1500) {
+            deadEnd = false;
+          }
+
           if((ui_Left_Line_Tracker_Data < (ui_Left_Line_Tracker_Dark - ui_Line_Tracker_Tolerance)) 
           && (ui_Middle_Line_Tracker_Data > (ui_Middle_Line_Tracker_Dark - ui_Line_Tracker_Tolerance)) 
           && (ui_Right_Line_Tracker_Data < (ui_Right_Line_Tracker_Dark - ui_Line_Tracker_Tolerance))) {
             //Go Forward
             goForward();
+            distanceTracker();
           }
 
           if((ui_Left_Line_Tracker_Data > (ui_Left_Line_Tracker_Dark - ui_Line_Tracker_Tolerance)) 
@@ -305,6 +324,7 @@ void loop()
           && (ui_Right_Line_Tracker_Data < (ui_Right_Line_Tracker_Dark - ui_Line_Tracker_Tolerance))) {
             //Go Left
             goLeft();
+            distanceTracker();
           }
 
           if((ui_Left_Line_Tracker_Data < (ui_Left_Line_Tracker_Dark - ui_Line_Tracker_Tolerance)) 
@@ -312,15 +332,27 @@ void loop()
           && (ui_Right_Line_Tracker_Data > (ui_Right_Line_Tracker_Dark - ui_Line_Tracker_Tolerance))) {
             //Go Right
             goRight();
+            distanceTracker();
           }
 
           if((ui_Left_Line_Tracker_Data < (ui_Left_Line_Tracker_Dark - ui_Line_Tracker_Tolerance)) 
           && (ui_Middle_Line_Tracker_Data < (ui_Middle_Line_Tracker_Dark - ui_Line_Tracker_Tolerance)) 
           && (ui_Right_Line_Tracker_Data < (ui_Right_Line_Tracker_Dark - ui_Line_Tracker_Tolerance))) {
               //Intersection -- default turn left
-            goLeft();
+            reverse();
+            //if(!deadEnd) reverse();
+            //if(deadEnd){
+             // goForward();
+            //} 
+
           }
 
+          if((ui_Left_Line_Tracker_Data > (ui_Left_Line_Tracker_Dark - ui_Line_Tracker_Tolerance)) 
+          && (ui_Middle_Line_Tracker_Data > (ui_Middle_Line_Tracker_Dark - ui_Line_Tracker_Tolerance)) 
+          && (ui_Right_Line_Tracker_Data > (ui_Right_Line_Tracker_Dark - ui_Line_Tracker_Tolerance))) {
+              //Intersection -- default turn left
+            goForward();
+          }
 
         //if(bt_Motors_Enabled)
         //{
@@ -591,30 +623,83 @@ void Ping()
 #endif
 }  
 
+
+void deadEndDetect(boolean direction){
+  if(direction == 1) deadFwd = millis();
+  if(direction == 0) deadRev = millis();
+
+  if(abs(deadFwd - deadRev) < 70000) deadEndCount++;
+  
+  if(deadEndCount > 100) {
+    deadEnd = true;
+    deadEndReset = millis();
+  }
+  else {
+    deadEnd = false;
+  }
+
+  Serial.print("deadEndDetect: ");
+  Serial.println(abs(deadFwd - deadRev));
+  Serial.print("deadEndCount: ");
+  Serial.println(deadEndCount);
+  Serial.print("deadEnd: ");
+  Serial.println(deadEnd);
+}
+
 void goForward() {
-  servo_LeftMotor.writeMicroseconds(ui_Left_Motor_Speed);
-  servo_RightMotor.writeMicroseconds(ui_Right_Motor_Speed);
-  Serial.println("Forward");
+  //servo_LeftMotor.writeMicroseconds(ui_Left_Motor_Speed-speedOffset);
+  //servo_RightMotor.writeMicroseconds(ui_Right_Motor_Speed-speedOffset);
+  servo_LeftMotor.writeMicroseconds(1675);
+  servo_RightMotor.writeMicroseconds(1675);
+  deadEndDetect(1);
+
+
 }
 
 void goLeft() {
-  servo_LeftMotor.writeMicroseconds(ui_Left_Motor_Speed);
-  servo_RightMotor.writeMicroseconds(ci_Right_Motor_Stop);
-  Serial.println("Left");
+  //servo_LeftMotor.writeMicroseconds(ui_Left_Motor_Speed-speedOffset);
+  //servo_RightMotor.writeMicroseconds(ci_Right_Motor_Stop);
+  //servo_RightMotor.writeMicroseconds(ui_Right_Motor_Speed-500-speedOffset);
+  servo_LeftMotor.writeMicroseconds(1675);
+  //servo_RightMotor.writeMicroseconds(ci_Right_Motor_Stop);
+  servo_RightMotor.writeMicroseconds(1325);
 }
 
 void goRight() {
-  servo_LeftMotor.writeMicroseconds(ci_Left_Motor_Stop);
-  servo_RightMotor.writeMicroseconds(ui_Right_Motor_Speed);
-  Serial.println("Right");
+  //servo_LeftMotor.writeMicroseconds(ci_Left_Motor_Stop);
+  //servo_LeftMotor.writeMicroseconds(ui_Left_Motor_Speed-500-speedOffset);
+  //servo_RightMotor.writeMicroseconds(ui_Right_Motor_Speed-speedOffset);
+  servo_LeftMotor.writeMicroseconds(1325);
+  servo_RightMotor.writeMicroseconds(1675);
 }
 
 void stop() {
   servo_LeftMotor.writeMicroseconds(ci_Left_Motor_Stop);
   servo_RightMotor.writeMicroseconds(ci_Right_Motor_Stop);
-  Serial.println("Stop");
 }
 
+void reverse() {
+  //servo_LeftMotor.writeMicroseconds(ui_Left_Motor_Speed-500-speedOffset);
+  //servo_RightMotor.writeMicroseconds(ui_Right_Motor_Speed-500-speedOffset);
+  servo_LeftMotor.writeMicroseconds(1325);
+  servo_RightMotor.writeMicroseconds(1325);
+  deadEndDetect(0);
+
+
+}
+
+void distanceTracker(){
+  unsigned long averagePos = millis()/1000;
+  totalDist+=averagePos;
+  Serial.print("totalDist: ");
+  Serial.println(totalDist);
+
+  Serial.print("leftPos: ");
+  Serial.println(l_Left_Motor_Position);
+
+  Serial.print("rightPos: ");
+  Serial.println(l_Right_Motor_Position);
+}
 
 
 
