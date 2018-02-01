@@ -27,10 +27,10 @@ I2CEncoder encoder_LeftMotor;
 
 // Uncomment keywords to enable debugging output
 
-#define DEBUG_MODE_DISPLAY
+//#define DEBUG_MODE_DISPLAY
 //#define DEBUG_MOTORS
 //#define DEBUG_LINE_TRACKERS
-//#define DEBUG_ENCODERS
+#define DEBUG_ENCODERS
 //#define DEBUG_ULTRASONIC
 //#define DEBUG_LINE_TRACKER_CALIBRATION
 //#define DEBUG_MOTOR_CALIBRATION
@@ -40,6 +40,7 @@ unsigned int deadFwd = 0;
 unsigned int deadRev = 0;
 unsigned int deadEndCount = 0;
 unsigned int deadEndReset = 0;
+unsigned int deadEndTimeout = 0;
 
 boolean bt_Motors_Enabled = true;
 
@@ -165,6 +166,9 @@ void setup() {
 
   CharliePlexM::setBtn(ci_Charlieplex_LED1,ci_Charlieplex_LED2,
                        ci_Charlieplex_LED3,ci_Charlieplex_LED4,ci_Mode_Button);
+
+  pinMode(3, OUTPUT);
+  digitalWrite(3, HIGH);
 
   // set up ultrasonic
   pinMode(ci_Ultrasonic_Ping, OUTPUT);
@@ -306,8 +310,14 @@ void loop()
          possibly encoder counts.
        /*************************************************************************************/
 
+          if(deadEnd){
+            digitalWrite(3, HIGH);
+          }
+          else{
+            digitalWrite(3, LOW);
+          }
 
-          if(millis() - deadEndReset > 1500) {
+          if(millis() - deadEndReset > 2000) {
             deadEnd = false;
           }
 
@@ -316,7 +326,6 @@ void loop()
           && (ui_Right_Line_Tracker_Data < (ui_Right_Line_Tracker_Dark - ui_Line_Tracker_Tolerance))) {
             //Go Forward
             goForward();
-            distanceTracker();
           }
 
           if((ui_Left_Line_Tracker_Data > (ui_Left_Line_Tracker_Dark - ui_Line_Tracker_Tolerance)) 
@@ -324,7 +333,6 @@ void loop()
           && (ui_Right_Line_Tracker_Data < (ui_Right_Line_Tracker_Dark - ui_Line_Tracker_Tolerance))) {
             //Go Left
             goLeft();
-            distanceTracker();
           }
 
           if((ui_Left_Line_Tracker_Data < (ui_Left_Line_Tracker_Dark - ui_Line_Tracker_Tolerance)) 
@@ -332,7 +340,6 @@ void loop()
           && (ui_Right_Line_Tracker_Data > (ui_Right_Line_Tracker_Dark - ui_Line_Tracker_Tolerance))) {
             //Go Right
             goRight();
-            distanceTracker();
           }
 
           if((ui_Left_Line_Tracker_Data < (ui_Left_Line_Tracker_Dark - ui_Line_Tracker_Tolerance)) 
@@ -340,10 +347,6 @@ void loop()
           && (ui_Right_Line_Tracker_Data < (ui_Right_Line_Tracker_Dark - ui_Line_Tracker_Tolerance))) {
               //Intersection -- default turn left
             reverse();
-            //if(!deadEnd) reverse();
-            //if(deadEnd){
-             // goForward();
-            //} 
 
           }
 
@@ -353,6 +356,9 @@ void loop()
               //Intersection -- default turn left
             goForward();
           }
+
+        //Serial.print("deadEnd: ");
+        //Serial.println(deadEnd);
 
         //if(bt_Motors_Enabled)
         //{
@@ -628,22 +634,19 @@ void deadEndDetect(boolean direction){
   if(direction == 1) deadFwd = millis();
   if(direction == 0) deadRev = millis();
 
-  if(abs(deadFwd - deadRev) < 70000) deadEndCount++;
+  if(abs(deadFwd - deadRev) < 70000) {
+    deadEndCount++;
+    deadEndTimeout = millis();
+  } 
   
-  if(deadEndCount > 100) {
+  if(deadEndCount > 25 && (millis() - deadEndTimeout) > 5000) {
     deadEnd = true;
+    deadEndTimeout = 0;
     deadEndReset = millis();
   }
   else {
     deadEnd = false;
   }
-
-  Serial.print("deadEndDetect: ");
-  Serial.println(abs(deadFwd - deadRev));
-  Serial.print("deadEndCount: ");
-  Serial.println(deadEndCount);
-  Serial.print("deadEnd: ");
-  Serial.println(deadEnd);
 }
 
 void goForward() {
@@ -687,20 +690,6 @@ void reverse() {
 
 
 }
-
-void distanceTracker(){
-  unsigned long averagePos = millis()/1000;
-  totalDist+=averagePos;
-  Serial.print("totalDist: ");
-  Serial.println(totalDist);
-
-  Serial.print("leftPos: ");
-  Serial.println(l_Left_Motor_Position);
-
-  Serial.print("rightPos: ");
-  Serial.println(l_Right_Motor_Position);
-}
-
 
 
 
