@@ -77,6 +77,8 @@ const int ci_Left_Line_Tracker_LED = 12;
 
 //constants
 
+int phase = 1;
+
 // EEPROM addresses
 const int ci_Left_Line_Tracker_Dark_Address_L = 0;
 const int ci_Left_Line_Tracker_Dark_Address_H = 1;
@@ -98,7 +100,7 @@ const int ci_Right_Motor_Offset_Address_H = 15;
 const int ci_Left_Motor_Stop = 1500;        // 200 for brake mode; 1500 for stop
 const int ci_Right_Motor_Stop = 1500;
 const int ci_Grip_Motor_Open = 140;         // Experiment to determine appropriate value
-const int ci_Grip_Motor_Closed = 90;        //  "
+const int ci_Grip_Motor_Closed = 50;        //  "
 const int ci_Arm_Servo_Retracted = 55;      //  "
 const int ci_Arm_Servo_Extended = 120;      //  "
 const int ci_Display_Time = 500;
@@ -310,52 +312,94 @@ void loop()
          possibly encoder counts.
        /*************************************************************************************/
 
-          if(deadEnd){
-            digitalWrite(3, HIGH);
-          }
-          else{
-            digitalWrite(3, LOW);
-          }
-
           if(millis() - deadEndReset > 2000) {
             deadEnd = false;
           }
 
-          if((ui_Left_Line_Tracker_Data < (ui_Left_Line_Tracker_Dark - ui_Line_Tracker_Tolerance)) 
-          && (ui_Middle_Line_Tracker_Data > (ui_Middle_Line_Tracker_Dark - ui_Line_Tracker_Tolerance)) 
-          && (ui_Right_Line_Tracker_Data < (ui_Right_Line_Tracker_Dark - ui_Line_Tracker_Tolerance))) {
-            //Go Forward
-            goForward();
-          }
+switch(phase){
+case 1:
+{
 
-          if((ui_Left_Line_Tracker_Data > (ui_Left_Line_Tracker_Dark - ui_Line_Tracker_Tolerance)) 
-          && (ui_Middle_Line_Tracker_Data < (ui_Middle_Line_Tracker_Dark - ui_Line_Tracker_Tolerance)) 
-          && (ui_Right_Line_Tracker_Data < (ui_Right_Line_Tracker_Dark - ui_Line_Tracker_Tolerance))) {
-            //Go Left
-            goLeft();
-          }
+    if((ui_Left_Line_Tracker_Data < (ui_Left_Line_Tracker_Dark - ui_Line_Tracker_Tolerance)) 
+    && (ui_Middle_Line_Tracker_Data > (ui_Middle_Line_Tracker_Dark - ui_Line_Tracker_Tolerance)) 
+    && (ui_Right_Line_Tracker_Data < (ui_Right_Line_Tracker_Dark - ui_Line_Tracker_Tolerance))) {
+      //Go Forward
+      goForward();
+    }
 
-          if((ui_Left_Line_Tracker_Data < (ui_Left_Line_Tracker_Dark - ui_Line_Tracker_Tolerance)) 
-          && (ui_Middle_Line_Tracker_Data < (ui_Middle_Line_Tracker_Dark - ui_Line_Tracker_Tolerance)) 
-          && (ui_Right_Line_Tracker_Data > (ui_Right_Line_Tracker_Dark - ui_Line_Tracker_Tolerance))) {
-            //Go Right
-            goRight();
-          }
+    if((ui_Left_Line_Tracker_Data > (ui_Left_Line_Tracker_Dark - ui_Line_Tracker_Tolerance)) 
+    && (ui_Middle_Line_Tracker_Data < (ui_Middle_Line_Tracker_Dark - ui_Line_Tracker_Tolerance)) 
+    && (ui_Right_Line_Tracker_Data < (ui_Right_Line_Tracker_Dark - ui_Line_Tracker_Tolerance))) {
+      //Go Left
+      goLeft();
+    }
 
-          if((ui_Left_Line_Tracker_Data < (ui_Left_Line_Tracker_Dark - ui_Line_Tracker_Tolerance)) 
-          && (ui_Middle_Line_Tracker_Data < (ui_Middle_Line_Tracker_Dark - ui_Line_Tracker_Tolerance)) 
-          && (ui_Right_Line_Tracker_Data < (ui_Right_Line_Tracker_Dark - ui_Line_Tracker_Tolerance))) {
-              //Intersection -- default turn left
-            reverse();
+    if((ui_Left_Line_Tracker_Data < (ui_Left_Line_Tracker_Dark - ui_Line_Tracker_Tolerance)) 
+    && (ui_Middle_Line_Tracker_Data < (ui_Middle_Line_Tracker_Dark - ui_Line_Tracker_Tolerance)) 
+    && (ui_Right_Line_Tracker_Data > (ui_Right_Line_Tracker_Dark - ui_Line_Tracker_Tolerance))) {
+      //Go Right
+      goRight();
+    }
 
-          }
+    if((ui_Left_Line_Tracker_Data < (ui_Left_Line_Tracker_Dark - ui_Line_Tracker_Tolerance)) 
+    && (ui_Middle_Line_Tracker_Data < (ui_Middle_Line_Tracker_Dark - ui_Line_Tracker_Tolerance)) 
+    && (ui_Right_Line_Tracker_Data < (ui_Right_Line_Tracker_Dark - ui_Line_Tracker_Tolerance))) {
+    //Intersection -- default turn left
+    //reverse();
+      goRight();
+      phase++;
+    }
 
-          if((ui_Left_Line_Tracker_Data > (ui_Left_Line_Tracker_Dark - ui_Line_Tracker_Tolerance)) 
-          && (ui_Middle_Line_Tracker_Data > (ui_Middle_Line_Tracker_Dark - ui_Line_Tracker_Tolerance)) 
-          && (ui_Right_Line_Tracker_Data > (ui_Right_Line_Tracker_Dark - ui_Line_Tracker_Tolerance))) {
-              //Intersection -- default turn left
-            goForward();
-          }
+    if((ui_Left_Line_Tracker_Data > (ui_Left_Line_Tracker_Dark - ui_Line_Tracker_Tolerance)) 
+    && (ui_Middle_Line_Tracker_Data > (ui_Middle_Line_Tracker_Dark - ui_Line_Tracker_Tolerance)) 
+    && (ui_Right_Line_Tracker_Data > (ui_Right_Line_Tracker_Dark - ui_Line_Tracker_Tolerance))) {
+    //Intersection -- default turn left
+      goForward();
+    }
+  }
+  case 2:
+  {
+
+    if((ui_Left_Line_Tracker_Data < (ui_Left_Line_Tracker_Dark - ui_Line_Tracker_Tolerance)) 
+    && (ui_Middle_Line_Tracker_Data > (ui_Middle_Line_Tracker_Dark - ui_Line_Tracker_Tolerance)) 
+    && (ui_Right_Line_Tracker_Data < (ui_Right_Line_Tracker_Dark - ui_Line_Tracker_Tolerance))) {
+      //Go Forward
+      goForward();
+    }
+
+    if((ui_Left_Line_Tracker_Data > (ui_Left_Line_Tracker_Dark - ui_Line_Tracker_Tolerance)) 
+    && (ui_Middle_Line_Tracker_Data < (ui_Middle_Line_Tracker_Dark - ui_Line_Tracker_Tolerance)) 
+    && (ui_Right_Line_Tracker_Data < (ui_Right_Line_Tracker_Dark - ui_Line_Tracker_Tolerance))) {
+      //Go Left
+      goLeft();
+    }
+
+    if((ui_Left_Line_Tracker_Data < (ui_Left_Line_Tracker_Dark - ui_Line_Tracker_Tolerance)) 
+    && (ui_Middle_Line_Tracker_Data < (ui_Middle_Line_Tracker_Dark - ui_Line_Tracker_Tolerance)) 
+    && (ui_Right_Line_Tracker_Data > (ui_Right_Line_Tracker_Dark - ui_Line_Tracker_Tolerance))) {
+      //Go Right
+      goRight();
+    }
+
+    if((ui_Left_Line_Tracker_Data < (ui_Left_Line_Tracker_Dark - ui_Line_Tracker_Tolerance)) 
+    && (ui_Middle_Line_Tracker_Data < (ui_Middle_Line_Tracker_Dark - ui_Line_Tracker_Tolerance)) 
+    && (ui_Right_Line_Tracker_Data < (ui_Right_Line_Tracker_Dark - ui_Line_Tracker_Tolerance))) {
+    //Intersection -- default turn left
+    //reverse();
+      goStop();
+      phase++;
+    }
+
+    if((ui_Left_Line_Tracker_Data > (ui_Left_Line_Tracker_Dark - ui_Line_Tracker_Tolerance)) 
+    && (ui_Middle_Line_Tracker_Data > (ui_Middle_Line_Tracker_Dark - ui_Line_Tracker_Tolerance)) 
+    && (ui_Right_Line_Tracker_Data > (ui_Right_Line_Tracker_Dark - ui_Line_Tracker_Tolerance))) {
+    //Intersection -- default turn left
+      goForward();
+    }
+
+  }
+
+}
 
         //Serial.print("deadEnd: ");
         //Serial.println(deadEnd);
@@ -387,6 +431,20 @@ void loop()
     
     case 2:    //Calibrate line tracker light levels after 3 seconds
     {
+
+
+
+
+
+extendArm();
+openGrip();
+closeGrip();
+retractArm();
+      delay(1000);
+
+
+
+/*
       if(bt_3_S_Time_Up)
       {
         if(!bt_Cal_Initialized)
@@ -431,6 +489,8 @@ void loop()
         ui_Mode_Indicator_Index = 2; 
       }
       break;
+
+      */
     }
     
     case 3:    // Calibrate line tracker dark levels after 3 seconds
@@ -648,12 +708,14 @@ void deadEndDetect(boolean direction){
     deadEnd = false;
   }
 }
+int fwdSpeed = 1675;
+int revSpeed = 1325;
 
 void goForward() {
   //servo_LeftMotor.writeMicroseconds(ui_Left_Motor_Speed-speedOffset);
   //servo_RightMotor.writeMicroseconds(ui_Right_Motor_Speed-speedOffset);
-  servo_LeftMotor.writeMicroseconds(1675);
-  servo_RightMotor.writeMicroseconds(1675);
+  servo_LeftMotor.writeMicroseconds(fwdSpeed);
+  servo_RightMotor.writeMicroseconds(fwdSpeed);
   deadEndDetect(1);
 
 
@@ -663,20 +725,20 @@ void goLeft() {
   //servo_LeftMotor.writeMicroseconds(ui_Left_Motor_Speed-speedOffset);
   //servo_RightMotor.writeMicroseconds(ci_Right_Motor_Stop);
   //servo_RightMotor.writeMicroseconds(ui_Right_Motor_Speed-500-speedOffset);
-  servo_LeftMotor.writeMicroseconds(1675);
+  servo_LeftMotor.writeMicroseconds(fwdSpeed);
   //servo_RightMotor.writeMicroseconds(ci_Right_Motor_Stop);
-  servo_RightMotor.writeMicroseconds(1325);
+  servo_RightMotor.writeMicroseconds(revSpeed);
 }
 
 void goRight() {
   //servo_LeftMotor.writeMicroseconds(ci_Left_Motor_Stop);
   //servo_LeftMotor.writeMicroseconds(ui_Left_Motor_Speed-500-speedOffset);
   //servo_RightMotor.writeMicroseconds(ui_Right_Motor_Speed-speedOffset);
-  servo_LeftMotor.writeMicroseconds(1325);
-  servo_RightMotor.writeMicroseconds(1675);
+  servo_LeftMotor.writeMicroseconds(revSpeed);
+  servo_RightMotor.writeMicroseconds(fwdSpeed);
 }
 
-void stop() {
+void goStop() {
   servo_LeftMotor.writeMicroseconds(ci_Left_Motor_Stop);
   servo_RightMotor.writeMicroseconds(ci_Right_Motor_Stop);
 }
@@ -684,13 +746,44 @@ void stop() {
 void reverse() {
   //servo_LeftMotor.writeMicroseconds(ui_Left_Motor_Speed-500-speedOffset);
   //servo_RightMotor.writeMicroseconds(ui_Right_Motor_Speed-500-speedOffset);
-  servo_LeftMotor.writeMicroseconds(1325);
-  servo_RightMotor.writeMicroseconds(1325);
+  servo_LeftMotor.writeMicroseconds(revSpeed);
+  servo_RightMotor.writeMicroseconds(revSpeed);
   deadEndDetect(0);
-
 
 }
 
+void openGrip(){
+        for(int i = ci_Grip_Motor_Closed; i < ci_Grip_Motor_Open; )
+      {
+        servo_GripMotor.write(i);
+        delay(10);
+        i++;
+      }
+}
 
+void closeGrip(){
+        for(int i = ci_Grip_Motor_Open; i > ci_Grip_Motor_Closed; )
+      {
+        servo_GripMotor.write(i);
+        delay(10);
+        i--;
+      }
+}
 
+void retractArm(){
+        for(int i = ci_Arm_Servo_Extended; i > ci_Arm_Servo_Retracted; )
+      {
+        servo_ArmMotor.write(i);
+        delay(10);
+        i--;
+      }
+}
 
+void extendArm(){
+        for(int i = ci_Arm_Servo_Retracted; i < ci_Arm_Servo_Extended; )
+      {
+        servo_ArmMotor.write(i);
+        delay(10);
+        i++;
+      }
+}
