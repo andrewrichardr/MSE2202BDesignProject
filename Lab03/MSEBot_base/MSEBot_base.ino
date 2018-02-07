@@ -29,8 +29,8 @@ I2CEncoder encoder_LeftMotor;
 
 //#define DEBUG_MODE_DISPLAY
 //#define DEBUG_MOTORS
-//#define DEBUG_LINE_TRACKERS
-#define DEBUG_ENCODERS
+#define DEBUG_LINE_TRACKERS
+//#define DEBUG_ENCODERS
 //#define DEBUG_ULTRASONIC
 //#define DEBUG_LINE_TRACKER_CALIBRATION
 //#define DEBUG_MOTOR_CALIBRATION
@@ -236,7 +236,7 @@ int run = 1;
 
 void loop()
 {
-  if((millis() - ul_3_Second_timer) > 3000)
+  if((millis() - ul_3_Second_timer) > 10)
   {
     bt_3_S_Time_Up = true;
   }
@@ -316,10 +316,6 @@ void loop()
             deadEnd = false;
           }
 
-switch(phase){
-case 1:
-{
-
     if((ui_Left_Line_Tracker_Data < (ui_Left_Line_Tracker_Dark - ui_Line_Tracker_Tolerance)) 
     && (ui_Middle_Line_Tracker_Data > (ui_Middle_Line_Tracker_Dark - ui_Line_Tracker_Tolerance)) 
     && (ui_Right_Line_Tracker_Data < (ui_Right_Line_Tracker_Dark - ui_Line_Tracker_Tolerance))) {
@@ -346,8 +342,7 @@ case 1:
     && (ui_Right_Line_Tracker_Data < (ui_Right_Line_Tracker_Dark - ui_Line_Tracker_Tolerance))) {
     //Intersection -- default turn left
     //reverse();
-      goRight();
-      phase++;
+      reverse();
     }
 
     if((ui_Left_Line_Tracker_Data > (ui_Left_Line_Tracker_Dark - ui_Line_Tracker_Tolerance)) 
@@ -356,50 +351,6 @@ case 1:
     //Intersection -- default turn left
       goForward();
     }
-  }
-  case 2:
-  {
-
-    if((ui_Left_Line_Tracker_Data < (ui_Left_Line_Tracker_Dark - ui_Line_Tracker_Tolerance)) 
-    && (ui_Middle_Line_Tracker_Data > (ui_Middle_Line_Tracker_Dark - ui_Line_Tracker_Tolerance)) 
-    && (ui_Right_Line_Tracker_Data < (ui_Right_Line_Tracker_Dark - ui_Line_Tracker_Tolerance))) {
-      //Go Forward
-      goForward();
-    }
-
-    if((ui_Left_Line_Tracker_Data > (ui_Left_Line_Tracker_Dark - ui_Line_Tracker_Tolerance)) 
-    && (ui_Middle_Line_Tracker_Data < (ui_Middle_Line_Tracker_Dark - ui_Line_Tracker_Tolerance)) 
-    && (ui_Right_Line_Tracker_Data < (ui_Right_Line_Tracker_Dark - ui_Line_Tracker_Tolerance))) {
-      //Go Left
-      goLeft();
-    }
-
-    if((ui_Left_Line_Tracker_Data < (ui_Left_Line_Tracker_Dark - ui_Line_Tracker_Tolerance)) 
-    && (ui_Middle_Line_Tracker_Data < (ui_Middle_Line_Tracker_Dark - ui_Line_Tracker_Tolerance)) 
-    && (ui_Right_Line_Tracker_Data > (ui_Right_Line_Tracker_Dark - ui_Line_Tracker_Tolerance))) {
-      //Go Right
-      goRight();
-    }
-
-    if((ui_Left_Line_Tracker_Data < (ui_Left_Line_Tracker_Dark - ui_Line_Tracker_Tolerance)) 
-    && (ui_Middle_Line_Tracker_Data < (ui_Middle_Line_Tracker_Dark - ui_Line_Tracker_Tolerance)) 
-    && (ui_Right_Line_Tracker_Data < (ui_Right_Line_Tracker_Dark - ui_Line_Tracker_Tolerance))) {
-    //Intersection -- default turn left
-    //reverse();
-      goStop();
-      phase++;
-    }
-
-    if((ui_Left_Line_Tracker_Data > (ui_Left_Line_Tracker_Dark - ui_Line_Tracker_Tolerance)) 
-    && (ui_Middle_Line_Tracker_Data > (ui_Middle_Line_Tracker_Dark - ui_Line_Tracker_Tolerance)) 
-    && (ui_Right_Line_Tracker_Data > (ui_Right_Line_Tracker_Dark - ui_Line_Tracker_Tolerance))) {
-    //Intersection -- default turn left
-      goForward();
-    }
-
-  }
-
-}
 
         //Serial.print("deadEnd: ");
         //Serial.println(deadEnd);
@@ -432,19 +383,6 @@ case 1:
     case 2:    //Calibrate line tracker light levels after 3 seconds
     {
 
-
-
-
-
-extendArm();
-openGrip();
-closeGrip();
-retractArm();
-      delay(1000);
-
-
-
-/*
       if(bt_3_S_Time_Up)
       {
         if(!bt_Cal_Initialized)
@@ -490,7 +428,7 @@ retractArm();
       }
       break;
 
-      */
+
     }
     
     case 3:    // Calibrate line tracker dark levels after 3 seconds
@@ -709,7 +647,7 @@ void deadEndDetect(boolean direction){
   }
 }
 int fwdSpeed = 1675;
-int revSpeed = 1325;
+int revSpeed = 1400;//1325;
 
 void goForward() {
   //servo_LeftMotor.writeMicroseconds(ui_Left_Motor_Speed-speedOffset);
