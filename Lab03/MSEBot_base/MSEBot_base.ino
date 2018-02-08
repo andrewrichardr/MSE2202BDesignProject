@@ -29,7 +29,7 @@ I2CEncoder encoder_LeftMotor;
 
 //#define DEBUG_MODE_DISPLAY
 //#define DEBUG_MOTORS
-#define DEBUG_LINE_TRACKERS
+//#define DEBUG_LINE_TRACKERS
 //#define DEBUG_ENCODERS
 //#define DEBUG_ULTRASONIC
 //#define DEBUG_LINE_TRACKER_CALIBRATION
@@ -233,6 +233,10 @@ void setup() {
 }
 
 int run = 1;
+boolean hasFlag = 0;
+boolean crossedCrack = 0;
+unsigned int flagTime;
+unsigned int currMillis;
 
 void loop()
 {
@@ -283,6 +287,9 @@ void loop()
       encoder_RightMotor.zero();
       ui_Mode_Indicator_Index = 0;
       totalDist = 0;
+      Serial.print("Ultrasonic: ");
+      Serial.println(ul_Echo_Time/58);
+      startTime = millis();
       break;
     } 
   
@@ -316,7 +323,87 @@ void loop()
             deadEnd = false;
           }
 
-          followLogic(1);
+          currMillis = millis();
+
+          followLogic(3);
+
+          Ping();
+
+
+
+          if(ul_Echo_Time/58 < 4 && ul_Echo_Time/58 != 0 && hasFlag == 0) {
+            //scanFlag();
+
+            goStop();
+
+            openGrip();
+            extendArm();
+            closeGrip();
+            retractArm();
+
+            turnAround();
+
+            hasFlag = 1; //check if flag is held via IR sensor
+            flagTime = millis()/1000;
+
+          }
+
+          if(deadEnd && crossedCrack == 0){
+            goForward();
+            Serial.println("DeadEnd Crossed");
+            delay(700);
+            deadEnd = false;
+            crossedCrack = 1;
+          }
+
+          if(ul_Echo_Time/58 < 4 && ul_Echo_Time/58 != 0 && hasFlag == 1 && crossedCrack == 1) {
+            //scanFlag();
+
+            goStop();
+
+            extendArm();
+            openGrip();
+            retractArm();
+
+            while(1) goStop();
+
+          }          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
         //Serial.print("deadEnd: ");
         //Serial.println(deadEnd);
@@ -598,12 +685,15 @@ void deadEndDetect(boolean direction){
   if(direction == 1) deadFwd = millis();
   if(direction == 0) deadRev = millis();
 
-  if(abs(deadFwd - deadRev) < 70000) {
+  Serial.print("Dead End Count: ");
+  Serial.println(deadEndCount);
+  
+  if(abs(deadFwd - deadRev) < 200) {
     deadEndCount++;
     deadEndTimeout = millis();
   } 
   
-  if(deadEndCount > 25 && (millis() - deadEndTimeout) > 5000) {
+  if(deadEndCount > 25) {
     deadEnd = true;
     deadEndTimeout = 0;
     deadEndReset = millis();
@@ -612,6 +702,7 @@ void deadEndDetect(boolean direction){
     deadEnd = false;
   }
 }
+
 int fwdSpeed = 1675;
 int revSpeed = 1400;//1325;
 
@@ -726,7 +817,18 @@ void followLogic(short dir){
     && (ui_Middle_Line_Tracker_Data > (ui_Middle_Line_Tracker_Dark - ui_Line_Tracker_Tolerance)) 
     && (ui_Right_Line_Tracker_Data > (ui_Right_Line_Tracker_Dark - ui_Line_Tracker_Tolerance))) {
     //Intersection -- default turn left
-      //goForward();
-      goLeft();
+      if(dir == 1) goForward();
+      if(dir == 2) goLeft();
+      if(dir == 3) goRight();
+      if(dir == 4) goStop();
     }
+}
+
+void turnAround(){
+  servo_LeftMotor.writeMicroseconds(1200);
+  servo_RightMotor.writeMicroseconds(1800);
+  delay(1700);
+  servo_LeftMotor.writeMicroseconds(ci_Left_Motor_Stop);
+  servo_RightMotor.writeMicroseconds(ci_Right_Motor_Stop);
+
 }
