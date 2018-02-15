@@ -325,13 +325,13 @@ void loop()
 
           currMillis = millis();
 
-          followLogic(3);
+          followLogic(1);
 
           Ping();
 
 
 
-          if(ul_Echo_Time/58 < 4 && ul_Echo_Time/58 != 0 && hasFlag == 0) {
+          if(ul_Echo_Time/58 < 4 && ul_Echo_Time/58 != 0 && hasFlag == 0&& 1 == 0) {
             //scanFlag();
 
             goStop();
@@ -348,15 +348,17 @@ void loop()
 
           }
 
-          if(deadEnd && crossedCrack == 0){
-            goForward();
+          if(deadEnd){
+            servo_LeftMotor.writeMicroseconds(1700);
+            servo_RightMotor.writeMicroseconds(1675);
             Serial.println("DeadEnd Crossed");
-            delay(700);
+            delay(1000);
             deadEnd = false;
             crossedCrack = 1;
+            deadEndCount = 0;
           }
 
-          if(ul_Echo_Time/58 < 4 && ul_Echo_Time/58 != 0 && hasFlag == 1 && crossedCrack == 1) {
+          if(ul_Echo_Time/58 < 4 && ul_Echo_Time/58 != 0 && hasFlag == 1 && crossedCrack == 1 && 1 == 0) {
             //scanFlag();
 
             goStop();
@@ -684,9 +686,6 @@ void Ping()
 void deadEndDetect(boolean direction){
   if(direction == 1) deadFwd = millis();
   if(direction == 0) deadRev = millis();
-
-  Serial.print("Dead End Count: ");
-  Serial.println(deadEndCount);
   
   if(abs(deadFwd - deadRev) < 200) {
     deadEndCount++;
@@ -703,8 +702,9 @@ void deadEndDetect(boolean direction){
   }
 }
 
-int fwdSpeed = 1675;
-int revSpeed = 1400;//1325;
+int fwdSpeed = 1800;//1675;
+int revSpeed = 1350;//1325;
+int revSpeedturn = 1400;//1325;
 
 void goForward() {
   //servo_LeftMotor.writeMicroseconds(ui_Left_Motor_Speed-speedOffset);
@@ -722,14 +722,14 @@ void goLeft() {
   //servo_RightMotor.writeMicroseconds(ui_Right_Motor_Speed-500-speedOffset);
   servo_LeftMotor.writeMicroseconds(fwdSpeed);
   //servo_RightMotor.writeMicroseconds(ci_Right_Motor_Stop);
-  servo_RightMotor.writeMicroseconds(revSpeed);
+  servo_RightMotor.writeMicroseconds(revSpeedturn);
 }
 
 void goRight() {
   //servo_LeftMotor.writeMicroseconds(ci_Left_Motor_Stop);
   //servo_LeftMotor.writeMicroseconds(ui_Left_Motor_Speed-500-speedOffset);
   //servo_RightMotor.writeMicroseconds(ui_Right_Motor_Speed-speedOffset);
-  servo_LeftMotor.writeMicroseconds(revSpeed);
+  servo_LeftMotor.writeMicroseconds(revSpeedturn);
   servo_RightMotor.writeMicroseconds(fwdSpeed);
 }
 
