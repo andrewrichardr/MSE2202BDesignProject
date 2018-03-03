@@ -1,4 +1,12 @@
+#include <Dhcp.h>
+#include <Dns.h>
+#include <Ethernet.h>
+#include <EthernetClient.h>
+#include <EthernetServer.h>
+#include <EthernetUdp.h>
+
 #include <Servo.h>
+#include <SPI.h>
 unsigned long milliseconds=1;
 unsigned long potPos;
 int a=0;
@@ -22,6 +30,7 @@ void setup()
   pinMode(3, INPUT);
   digitalWrite(2, HIGH);  
   Serial.begin(9600);
+  SPI.begin();
   servo1.attach(9);
 }
 
@@ -47,7 +56,7 @@ void loop()
     //incrementState();
   }
 
-
+SPI.transfer(0x5b);
 potPos = analogRead(0);
 Serial.println(potPos);
 servo1.write(180*potPos/(unsigned long)1023);
