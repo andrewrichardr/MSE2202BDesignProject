@@ -19,6 +19,7 @@ int LED[4] = {7, 6, 5, 4};
 int numLeds = 4;
 
 Servo servo1;
+Servo servo2;
 
 void setup()
 {
@@ -31,7 +32,9 @@ void setup()
   digitalWrite(2, HIGH);  
   Serial.begin(9600);
   SPI.begin();
-  servo1.attach(9);
+  servo1.attach(8);
+  servo2.attach(9);
+  servo2.writeMicroseconds(1600);
 }
 
 void loop()

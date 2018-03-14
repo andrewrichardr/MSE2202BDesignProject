@@ -5,12 +5,12 @@ bool fwd=1;
 unsigned int currMillis;
 unsigned int prevMillis;
 unsigned int interval = 100;
-int LED[4] = {7, 6, 5, 4};
+int LED[4] = {8, 9, 10, 11};
 int numLeds = 4;
 
 void setup()
 {
-  Serial.begin(115200);
+  Serial.begin(9600);
   for(int i=0;i<numLeds;i++)
   { 
     pinMode(LED[i], OUTPUT);
@@ -22,6 +22,7 @@ void loop()
 
   potPos = analogRead(0);
   interval = 100*potPos/(unsigned long)1023;
+  Serial.println(interval);
   currMillis = millis();
   if(currMillis - prevMillis >= interval)
   {
