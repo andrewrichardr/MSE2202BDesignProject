@@ -1,3 +1,4 @@
+
 //Main routine
 
 //Compile Options and Reqs:
@@ -5,6 +6,8 @@
 //  Part Number: F446RE
 //  Upload Method: STLink
 
+
+#include <Wire.h>
 
 //pin assignments
 #define RIGHT_MOTOR PC7
@@ -51,14 +54,16 @@ void magnetDetected(){
 
 void setup(){
   Serial.begin(9600);
-  Serial1.begin(9600);
+  Serial2.begin(9600);
+  Wire.begin();
+  Wire1.begin();
 
   attachInterrupt(digitalPinToInterrupt(HALL_EFFECT), magnetDetected, CHANGE);
-//  attachInterrupt(digitalPinToInterrupt(REED_SW), magnetDetected, CHANGE);
-//  attachInterrupt(digitalPinToInterrupt(LF_LIMIT_SW), lmswitch, FALLING);
-//  attachInterrupt(digitalPinToInterrupt(LR_LIMIT_SW), lmswitch, FALLING);
-//  attachInterrupt(digitalPinToInterrupt(RF_LIMIT_SW), lmswitch, FALLING);
-//  attachInterrupt(digitalPinToInterrupt(RR_LIMIT_SW), lmswitch, FALLING);
+  attachInterrupt(digitalPinToInterrupt(REED_SW), magnetDetected, CHANGE);
+  attachInterrupt(digitalPinToInterrupt(LF_LIMIT_SW), lmswitch, FALLING);
+  attachInterrupt(digitalPinToInterrupt(LR_LIMIT_SW), lmswitch, FALLING);
+  attachInterrupt(digitalPinToInterrupt(RF_LIMIT_SW), lmswitch, FALLING);
+  attachInterrupt(digitalPinToInterrupt(RR_LIMIT_SW), lmswitch, FALLING);
   
 }
 
