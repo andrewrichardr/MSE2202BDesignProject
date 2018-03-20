@@ -9,6 +9,7 @@
 
 
 #include <Wire.h>
+#include <Stream.h>
 
 //pin assignments
 #define RIGHT_MOTOR PC7
@@ -54,12 +55,21 @@ void magnetDetected(){
 }
 
 void setup(){
-  Serial.begin(9600);
+  Serial1.begin(9600);
   Serial2.begin(9600);
+  Serial3.begin(9600);
   Serial4.begin(9600);
-  Serial8.begin(9600);
+  Serial5.begin(9600);
+  Serial6.begin(9600);
   Wire.begin();
-  //Wire1.begin();
+
+  TwoWire Wire11;
+  TwoWire Wire22;
+
+  Wire11.begin();
+  Wire22.begin();
+
+
 
   attachInterrupt(digitalPinToInterrupt(HALL_EFFECT), magnetDetected, CHANGE);
   attachInterrupt(digitalPinToInterrupt(REED_SW), magnetDetected, CHANGE);
