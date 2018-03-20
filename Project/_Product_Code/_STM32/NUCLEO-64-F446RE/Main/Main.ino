@@ -56,7 +56,8 @@ void magnetDetected(){
 void setup(){
   Serial.begin(9600);
   Serial2.begin(9600);
-  Serial3.begin(9600);
+  Serial4.begin(9600);
+  Serial8.begin(9600);
   Wire.begin();
   //Wire1.begin();
 
