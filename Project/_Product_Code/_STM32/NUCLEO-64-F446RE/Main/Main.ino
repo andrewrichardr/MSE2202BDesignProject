@@ -7,6 +7,7 @@
 //  Upload Method: STLink
 
 
+
 #include <Wire.h>
 
 //pin assignments
@@ -55,8 +56,9 @@ void magnetDetected(){
 void setup(){
   Serial.begin(9600);
   Serial2.begin(9600);
+  Serial3.begin(9600);
   Wire.begin();
-  Wire1.begin();
+  //Wire1.begin();
 
   attachInterrupt(digitalPinToInterrupt(HALL_EFFECT), magnetDetected, CHANGE);
   attachInterrupt(digitalPinToInterrupt(REED_SW), magnetDetected, CHANGE);
