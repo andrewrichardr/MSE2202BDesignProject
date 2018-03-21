@@ -4,6 +4,8 @@
 Servo leftMotor;
 Servo rightMotor;
 
+#include <Wire.h>
+
 #define LEFT_MOTOR PA9
 #define RIGHT_MOTOR PC7
 
@@ -20,10 +22,44 @@ Servo rightMotor;
 #define FORWARD_SPEED 1850
 #define REVERSE_SPEED 1850
 
+#define LIMIT_SW PA3
+
+#define COMPASS_I2C_ADDR 0x1E
+
 long FR_ultrasonic_dist;
 long LF_ultrasonic_dist;
 unsigned long FRecho;
 unsigned long LFecho;
+
+int x, y, z;
+
+void lmswitch(){
+  
+  Wire.beginTransmission(COMPASS_I2C_ADDR);
+  Wire.write(0x03); //select register 3, X MSB register
+  Wire.endTransmission();
+  
+ 
+ //Read data from each axis, 2 registers per axis
+  Wire.requestFrom(COMPASS_I2C_ADDR, 6);
+  if(6<=Wire.available()){
+    x = Wire.read()<<8; //X msb
+    x |= Wire.read(); //X lsb
+    z = Wire.read()<<8; //Z msb
+    z |= Wire.read(); //Z lsb
+    y = Wire.read()<<8; //Y msb
+    y |= Wire.read(); //Y lsb
+  }
+  
+  //Print out values of each axis
+  Serial.print("x: ");
+  Serial.print(x);
+  Serial.print("  y: ");
+  Serial.print(y);
+  Serial.print("  z: ");
+  Serial.println(z);
+  
+}
 
 void setup() {
   // put your setup code here, to run once:
@@ -39,6 +75,14 @@ void setup() {
   leftMotor.attach(LEFT_MOTOR);
   rightMotor.attach(RIGHT_MOTOR);
 
+  attachInterrupt(digitalPinToInterrupt(LIMIT_SW), lmswitch, FALLING);
+
+  Wire.begin();
+  Wire.beginTransmission(COMPASS_I2C_ADDR);
+  Wire.write(0x02);
+  Wire.write(0x00);
+  Wire.endTransmission();
+
 }
 
 void loop() {
@@ -46,7 +90,7 @@ void loop() {
   pingFR();
   pingLF();
 
-  if(abs(LF_ultrasonic_dist - FR_ultrasonic_dist) <= 10){
+  if(abs(LF_ultrasonic_dist - FR_ultrasonic_dist) <= 15){
     goForward();
     Serial.print("Forward  ");
   }
@@ -58,8 +102,6 @@ void loop() {
     moveOut();
     Serial.print("Move Out  ");
   }
-
-
 
   Serial.print("LF: ");
   Serial.print(LF_ultrasonic_dist);
