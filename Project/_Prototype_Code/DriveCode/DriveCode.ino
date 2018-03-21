@@ -17,11 +17,11 @@ Servo rightMotor;
 
 #define TURN_THRESHOLD 10
 
-#define FORWARD_SPEED 1700
-#define REVERSE_SPEED 1700
+#define FORWARD_SPEED 1850
+#define REVERSE_SPEED 1850
 
-unsigned long FR_ultrasonic_dist;
-unsigned long LF_ultrasonic_dist;
+long FR_ultrasonic_dist;
+long LF_ultrasonic_dist;
 unsigned long FRecho;
 unsigned long LFecho;
 
@@ -46,27 +46,26 @@ void loop() {
   pingFR();
   pingLF();
 
-  if(LF_ultrasonic_dist < WALL_UPPER_THRESHOLD && LF_ultrasonic_dist > WALL_LOWER_THRESHOLD){
+  if(abs(LF_ultrasonic_dist - FR_ultrasonic_dist) <= 10){
     goForward();
+    Serial.print("Forward  ");
   }
-  else if(LF_ultrasonic_dist > WALL_UPPER_THRESHOLD){
+  else if(LF_ultrasonic_dist < FR_ultrasonic_dist){
     moveIn();
+    Serial.print("Move In  ");
   }
   else{
     moveOut();
-  }
-
-  if(FR_ultrasonic_dist < TURN_THRESHOLD){
-    TurnOnAxis(90);
+    Serial.print("Move Out  ");
   }
 
 
-#ifdef DEBUG_ULTRASONIC
+
   Serial.print("LF: ");
   Serial.print(LF_ultrasonic_dist);
   Serial.print("  FR: ");
   Serial.println(FR_ultrasonic_dist);
-#endif
+
 }
 
 void pingFR(){
@@ -79,7 +78,7 @@ void pingFR(){
   //use command pulseIn to listen to Ultrasonic_Data pin to record the
   //time that it takes from when the Pin goes HIGH until it goes LOW 
   FRecho = pulseIn(FR_ULTRASONIC_OUT, HIGH, 10000);
-  if(FRecho) FR_ultrasonic_dist = FRecho/58;
+  if(FRecho) FR_ultrasonic_dist = FRecho;
 }
 
 void pingLF(){
@@ -92,7 +91,7 @@ void pingLF(){
   //use command pulseIn to listen to Ultrasonic_Data pin to record the
   //time that it takes from when the Pin goes HIGH until it goes LOW 
   LFecho = pulseIn(LF_ULTRASONIC_OUT, HIGH, 10000);
-  if(LFecho) LF_ultrasonic_dist = LFecho/58;
+  if(LFecho) LF_ultrasonic_dist = LFecho;
 }
 
 void TurnOnAxis(int deg){
@@ -109,11 +108,12 @@ void goForward(){
 void moveIn(){
  // Serial.println("Move In");
   leftMotor.writeMicroseconds(FORWARD_SPEED);
-  rightMotor.writeMicroseconds(FORWARD_SPEED-100);
+  rightMotor.writeMicroseconds(1500);
 }
 void moveOut(){
   //Serial.println("Move Out");
-  leftMotor.writeMicroseconds(FORWARD_SPEED-100);
+  leftMotor.writeMicroseconds(1500);
   rightMotor.writeMicroseconds(FORWARD_SPEED);
 }
+
 

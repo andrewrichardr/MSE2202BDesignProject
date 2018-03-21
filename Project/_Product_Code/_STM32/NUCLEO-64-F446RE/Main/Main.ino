@@ -61,13 +61,14 @@ void setup(){
   Serial4.begin(9600);
   Serial5.begin(9600);
   Serial6.begin(9600);
+  
   Wire.begin();
 
-  TwoWire Wire11;
-  TwoWire Wire22;
+  TwoWire Wire1;
+  TwoWire Wire2;
 
-  Wire11.begin();
-  Wire22.begin();
+  Wire1.begin();
+  Wire2.begin();
 
 
 
