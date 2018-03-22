@@ -10,6 +10,7 @@
 
 #include <Wire.h>
 #include <Stream.h>
+#include <SPI.h>
 
 //pin assignments
 #define RIGHT_MOTOR PC7
@@ -55,20 +56,21 @@ void magnetDetected(){
 }
 
 void setup(){
+  
   Serial1.begin(9600);
   Serial2.begin(9600);
   Serial3.begin(9600);
   Serial4.begin(9600);
   Serial5.begin(9600);
   Serial6.begin(9600);
-  
+
   Wire.begin();
 
-  TwoWire Wire1;
-  TwoWire Wire2;
+  TwoWire Wire11;
+  TwoWire Wire22;
 
-  Wire1.begin();
-  Wire2.begin();
+  Wire11.begin();
+  Wire22.begin();
 
 
 
