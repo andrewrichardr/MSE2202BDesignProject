@@ -84,7 +84,10 @@ void setup(){
 }
 
 void loop(){
-  
+  char led;
+  if (Serial.available()) {
+    led = Serial3.read(); // Attach IR sensor to serial 3
+  }
 }
 
 
