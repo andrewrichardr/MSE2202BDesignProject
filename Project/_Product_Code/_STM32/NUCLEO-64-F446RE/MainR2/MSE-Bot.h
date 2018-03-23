@@ -68,17 +68,15 @@ private:
 	short currentTask = STARTING_TASK; 
 	bool hasCube = 0;
 
-	long LR_ultrasonic_dist;
-	long LF_ultrasonic_dist;
-	long F_ultrasonic_dist;
+	unsigned long LR_ultrasonic_dist;
+	unsigned long LF_ultrasonic_dist;
+	unsigned long F_ultrasonic_dist;
 	unsigned long LRecho;
 	unsigned long LFecho;
 	unsigned long Fecho;
 
 	Servo leftMotor;
     Servo rightMotor;
-
-	MSEBot();
 
 	void init();
 	void PingUltra();
@@ -92,7 +90,6 @@ private:
 	void readCompass(int* x, int* y, int* z);
 
 	void parallelFollow();
-
 public:
 	void GO();
 

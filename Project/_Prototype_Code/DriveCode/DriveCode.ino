@@ -103,39 +103,30 @@ void loop() {
 
 void pingLR(){
 
-  //Ping Ultrasonic
-  //Send the Ultrasonic Range Finder a 10 microsecond pulse per tech spec
+
   digitalWrite(LR_ULTRASONIC_IN, HIGH);
   delayMicroseconds(10);  //The 10 microsecond pause where the pulse in "high"
   digitalWrite(LR_ULTRASONIC_IN, LOW);
-  //use command pulseIn to listen to Ultrasonic_Data pin to record the
-  //time that it takes from when the Pin goes HIGH until it goes LOW 
+
   LRecho = pulseIn(LR_ULTRASONIC_OUT, HIGH, 10000);
   if(LRecho) LR_ultrasonic_dist = LRecho;
 }
 
 void pingLF(){
 
-  //Ping Ultrasonic
-  //Send the Ultrasonic Range Finder a 10 microsecond pulse per tech spec
   digitalWrite(LF_ULTRASONIC_IN, HIGH);
   delayMicroseconds(10);  //The 10 microsecond pause where the pulse in "high"
   digitalWrite(LF_ULTRASONIC_IN, LOW);
-  //use command pulseIn to listen to Ultrasonic_Data pin to record the
-  //time that it takes from when the Pin goes HIGH until it goes LOW 
+
   LFecho = pulseIn(LF_ULTRASONIC_OUT, HIGH, 10000);
   if(LFecho) LF_ultrasonic_dist = LFecho;
 }
 
 void pingF(){
 
-  //Ping Ultrasonic
-  //Send the Ultrasonic Range Finder a 10 microsecond pulse per tech spec
   digitalWrite(F_ULTRASONIC_IN, HIGH);
   delayMicroseconds(10);  //The 10 microsecond pause where the pulse in "high"
   digitalWrite(F_ULTRASONIC_IN, LOW);
-  //use command pulseIn to listen to Ultrasonic_Data pin to record the
-  //time that it takes from when the Pin goes HIGH until it goes LOW 
   Fecho = pulseIn(F_ULTRASONIC_OUT, HIGH, 10000);
   if(Fecho) F_ultrasonic_dist = Fecho;
 }

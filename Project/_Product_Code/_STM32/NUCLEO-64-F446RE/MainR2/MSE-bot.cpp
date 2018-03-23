@@ -1,9 +1,5 @@
 #include "MSE-Bot.h"
 
-MSEBot::MSEBot(){
-	Serial.println("Starting...");
-}
-
 void MSEBot::init(){
   Serial.begin(9600);
   Serial3.begin(2400); 
@@ -29,7 +25,7 @@ void MSEBot::PingUltra(){
   delayMicroseconds(10); 
   digitalWrite(F_ULTRASONIC_IN, LOW);
   Fecho = pulseIn(F_ULTRASONIC_OUT, HIGH, 10000);
-  if(Fecho) F_ultrasonic_dist = Fecho;
+  if(Fecho) LF_ultrasonic_dist = Fecho;
 
   digitalWrite(LF_ULTRASONIC_IN, HIGH);
   delayMicroseconds(10);  
@@ -45,12 +41,6 @@ void MSEBot::PingUltra(){
   LRecho = pulseIn(LR_ULTRASONIC_OUT, HIGH, 10000);
   if(LRecho) LR_ultrasonic_dist = LRecho;
 
-  Serial.print("F: ");
-  Serial.print(F_ultrasonic_dist);
-  Serial.print(" LF: ");
-  Serial.print(LF_ultrasonic_dist);
-  Serial.print("  LR: ");
-  Serial.println(LR_ultrasonic_dist);
 }
 
 void MSEBot::TurnOnAxis(){
@@ -73,6 +63,7 @@ void MSEBot::moveOut(){
   leftMotor.writeMicroseconds(1500);
   rightMotor.writeMicroseconds(FORWARD_SPEED);	
 }
+
 
 int MSEBot::scanIR(){
   return Serial3.read(); //Attached to CN10-2-3
@@ -128,34 +119,29 @@ void MSEBot::initCompass(){
 	Wire.endTransmission();
 }
 
-void parallelFollow(){
+
+void MSEBot::parallelFollow(){
 	if(abs(LF_ultrasonic_dist - LR_ultrasonic_dist) <= PARALLEL_TOLERANCE){
 		goForward();
-		Serial.print("Forward  ");
 	}
 	else if(LF_ultrasonic_dist > LR_ultrasonic_dist){
 		moveIn();
-		Serial.print("Move In  ");
 	}
 	else{
 		moveOut();
-		Serial.print("Move Out  ");
 	}
 	
-	if(F_ultrasonic_dist < TURN_THRESHOLD){
+	if(this->F_ultrasonic_dist < TURN_THRESHOLD){
 		TurnOnAxis();
 	}
 	
 	if(LF_ultrasonic_dist > WALL_TARGET_DIST){
 		moveIn();
-		Serial.print("Move In  ");
 	}
 	else{
 		moveOut();
-		Serial.print("Move Out  ");
 	}
 }
-
 
 void MSEBot::GO(){
 
@@ -163,7 +149,7 @@ void MSEBot::GO(){
 	initCompass();
 	int cx, cy, cz;
 
-	case(currentTask)
+	switch(currentTask)
 	{
 		case 1: //Finding the Cube
 		{
@@ -173,28 +159,31 @@ void MSEBot::GO(){
 				parallelFollow();
 				readCompass(&cx, &cy, &cz);
 				//some way of detecting the cube with the compass
-
 				
 			}
 			currentTask++;  //This task completed, proceed to next task
 		}
 		case 2: //Finding the Pyramid
 		{
+
 			currentTask++;  //This task completed, proceed to next task
 		}
 		case 3: //Inserting the Cube in the Pyramid
 		{
+
 			currentTask++;  //This task completed, proceed to next task
 		}
 		case 4:
 		{
 			while(1)
 			{
-				Serial.println("TASK COMPLETED!!")
-				Serial.println("please reset!")
+				Serial.println("TASK COMPLETED!!");
+				Serial.println("please reset!");
 				delay(1000);
 			}
 		}
 	}
-
 }
+
+
+
