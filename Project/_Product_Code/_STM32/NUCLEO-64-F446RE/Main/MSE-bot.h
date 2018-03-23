@@ -37,17 +37,17 @@
 #define RF_LIMIT_SW 				PB14
 #define RR_LIMIT_SW 				PB2
 
-//Ultrasonic input on USART2
-//IR on UART3
 //Compass input on I2C1
 #define MAG3110_I2C_ADDRESS         0x0E
 #define MAG3110_OUT_X_MSB			0x01
 #define MAG3110_CTRL_REG1			0x10
 #define MAG3110_ACTIVE_MODE			0x01
+
 //Encoder input on I2C3
 
 //Program Parameters
 #define WALL_TARGET_DIST			200
+#define WALL_TARGET_TOLERANCE		100
 #define PARALLEL_TOLERANCE			50
 #define TURN_THRESHOLD				500
 
@@ -62,23 +62,25 @@
 #define CUBE_INTAKE_OPEN			180 		//Arbitrary Number for now
 #define CUBE_INTAKE_CLOSE			0 			//Arbitrary Number for now
 
+
 class MSEBot
 {
 private:
-	short currentTask = STARTING_TASK; 
-	bool hasCube = 0;
+	short _currentTask = STARTING_TASK; 
+	bool _hasCube = 0;
 
-	unsigned long LR_ultrasonic_dist;
-	unsigned long LF_ultrasonic_dist;
-	unsigned long F_ultrasonic_dist;
-	unsigned long LRecho;
-	unsigned long LFecho;
-	unsigned long Fecho;
+	unsigned long _LR_ultrasonic_dist;
+	unsigned long _LF_ultrasonic_dist;
+	unsigned long _F_ultrasonic_dist;
+	unsigned long _LRecho;
+	unsigned long _LFecho;
+	unsigned long _Fecho;
 
-	Servo leftMotor;
-    Servo rightMotor;
+	int _cx, _cy, _cz;
 
-	void init();
+	Servo _leftMotor;
+    Servo _rightMotor;
+
 	void PingUltra();
 	void readUltra();
 	void TurnOnAxis();
@@ -88,9 +90,12 @@ private:
 	int scanIR();
 	void initCompass();
 	void readCompass(int* x, int* y, int* z);
+	bool checkForCube();
 
 	void parallelFollow();
 public:
+
+	void init();
 	void GO();
 
 };

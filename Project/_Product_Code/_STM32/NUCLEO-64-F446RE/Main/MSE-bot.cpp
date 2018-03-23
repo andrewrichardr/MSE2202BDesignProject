@@ -2,7 +2,8 @@
 
 void MSEBot::init(){
   Serial.begin(9600);
-  Serial3.begin(2400); 
+  Serial1.begin(115200);	//UART1 for external Ultrasonic Controller
+  Serial3.begin(2400); 		//UART3 for IR sensor
 
   pinMode(LR_ULTRASONIC_IN, OUTPUT);
   pinMode(LF_ULTRASONIC_IN, OUTPUT);
@@ -14,9 +15,12 @@ void MSEBot::init(){
 
   pinMode(LEFT_MOTOR, OUTPUT);
   pinMode(RIGHT_MOTOR, OUTPUT);
-  leftMotor.attach(LEFT_MOTOR);
-  rightMotor.attach(RIGHT_MOTOR);
+  _leftMotor.attach(LEFT_MOTOR);
+  _rightMotor.attach(RIGHT_MOTOR);
 
+  initCompass();
+
+  Serial.println("Initialized!");
 }
 
 void MSEBot::PingUltra(){
@@ -24,44 +28,42 @@ void MSEBot::PingUltra(){
   digitalWrite(F_ULTRASONIC_IN, HIGH);
   delayMicroseconds(10); 
   digitalWrite(F_ULTRASONIC_IN, LOW);
-  Fecho = pulseIn(F_ULTRASONIC_OUT, HIGH, 10000);
-  if(Fecho) LF_ultrasonic_dist = Fecho;
+  _Fecho = pulseIn(F_ULTRASONIC_OUT, HIGH, 10000);
+  if(_Fecho) _F_ultrasonic_dist = _Fecho;
 
   digitalWrite(LF_ULTRASONIC_IN, HIGH);
   delayMicroseconds(10);  
   digitalWrite(LF_ULTRASONIC_IN, LOW);
-
-  LFecho = pulseIn(LF_ULTRASONIC_OUT, HIGH, 10000);
-  if(LFecho) LF_ultrasonic_dist = LFecho;
+  _LFecho = pulseIn(LF_ULTRASONIC_OUT, HIGH, 10000);
+  if(_LFecho) _LF_ultrasonic_dist = _LFecho;
 
   digitalWrite(LR_ULTRASONIC_IN, HIGH);
   delayMicroseconds(10);  
   digitalWrite(LR_ULTRASONIC_IN, LOW);
-
-  LRecho = pulseIn(LR_ULTRASONIC_OUT, HIGH, 10000);
-  if(LRecho) LR_ultrasonic_dist = LRecho;
+  _LRecho = pulseIn(LR_ULTRASONIC_OUT, HIGH, 10000);
+  if(_LRecho) _LR_ultrasonic_dist = _LRecho;
 
 }
 
 void MSEBot::TurnOnAxis(){
-  leftMotor.writeMicroseconds(1250);
-  rightMotor.writeMicroseconds(1750);
+  _leftMotor.writeMicroseconds(1250);
+  _rightMotor.writeMicroseconds(1750);
   delay(1000); 
 }
 
 void MSEBot::goForward(){
-  leftMotor.writeMicroseconds(FORWARD_SPEED);
-  rightMotor.writeMicroseconds(FORWARD_SPEED);
+  _leftMotor.writeMicroseconds(FORWARD_SPEED);
+  _rightMotor.writeMicroseconds(FORWARD_SPEED);
 }
 
 void MSEBot::moveIn(){
-  leftMotor.writeMicroseconds(FORWARD_SPEED);
-  rightMotor.writeMicroseconds(1500);
+  _leftMotor.writeMicroseconds(FORWARD_SPEED);
+  _rightMotor.writeMicroseconds(1500);
 }
 
 void MSEBot::moveOut(){
-  leftMotor.writeMicroseconds(1500);
-  rightMotor.writeMicroseconds(FORWARD_SPEED);	
+  _leftMotor.writeMicroseconds(1500);
+  _rightMotor.writeMicroseconds(FORWARD_SPEED);	
 }
 
 
@@ -121,21 +123,21 @@ void MSEBot::initCompass(){
 
 
 void MSEBot::parallelFollow(){
-	if(abs(LF_ultrasonic_dist - LR_ultrasonic_dist) <= PARALLEL_TOLERANCE){
+	if(abs(_LF_ultrasonic_dist - _LR_ultrasonic_dist) < PARALLEL_TOLERANCE){
 		goForward();
 	}
-	else if(LF_ultrasonic_dist > LR_ultrasonic_dist){
+	else if(_LF_ultrasonic_dist > _LR_ultrasonic_dist){
 		moveIn();
 	}
 	else{
 		moveOut();
 	}
 	
-	if(this->F_ultrasonic_dist < TURN_THRESHOLD){
+	if(_F_ultrasonic_dist < TURN_THRESHOLD){
 		TurnOnAxis();
 	}
 	
-	if(LF_ultrasonic_dist > WALL_TARGET_DIST){
+	if(abs(_LF_ultrasonic_dist - WALL_TARGET_DIST) < WALL_TARGET_TOLERANCE){
 		moveIn();
 	}
 	else{
@@ -143,35 +145,47 @@ void MSEBot::parallelFollow(){
 	}
 }
 
+bool MSEBot::checkForCube(){
+	int cx, cy, cz;
+	//monitor compass output
+	readCompass(&cx, &cy, &cz);
+
+  return 0;
+}
+
 void MSEBot::GO(){
 
-	init();
-	initCompass();
-	int cx, cy, cz;
-
-	switch(currentTask)
+	switch(_currentTask)
 	{
 		case 1: //Finding the Cube
 		{
-			while(!hasCube)
+    Serial.println("Searching for the cube...");
+			while(!_hasCube)
 			{
 				PingUltra();
 				parallelFollow();
-				readCompass(&cx, &cy, &cz);
-				//some way of detecting the cube with the compass
-				
+				_hasCube = checkForCube();
+          Serial.print("F: ");
+  Serial.print(_F_ultrasonic_dist);
+  Serial.print(" LF: ");
+  Serial.print(_LF_ultrasonic_dist);
+  Serial.print("  LR: ");
+  Serial.println(_LR_ultrasonic_dist);
+        
 			}
-			currentTask++;  //This task completed, proceed to next task
+			_currentTask++;  //This task completed, proceed to next task
 		}
 		case 2: //Finding the Pyramid
 		{
+    Serial.println("Searching for the Pyramid...");
 
-			currentTask++;  //This task completed, proceed to next task
+			_currentTask++;  //This task completed, proceed to next task
 		}
 		case 3: //Inserting the Cube in the Pyramid
 		{
+    Serial.println("Loading Cube into Pyramid...");
 
-			currentTask++;  //This task completed, proceed to next task
+			_currentTask++;  //This task completed, proceed to next task
 		}
 		case 4:
 		{
