@@ -1,7 +1,7 @@
 #include "MSE-Bot.h"
 
 void MSEBot::init(){
-  Serial.begin(9600);
+  Serial.begin(115200);
   Serial1.begin(115200);	//UART1 for external Ultrasonic Controller
   Serial3.begin(2400); 		//UART3 for IR sensor
 
@@ -43,12 +43,17 @@ void MSEBot::PingUltra(){
   _LRecho = pulseIn(LR_ULTRASONIC_OUT, HIGH, 10000);
   if(_LRecho) _LR_ultrasonic_dist = _LRecho;
 
+  Serial.print("F: ");
+  Serial.print(_F_ultrasonic_dist);
+  Serial.print(" LF: ");
+  Serial.print(_LF_ultrasonic_dist);
+  Serial.print("  LR: ");
+  Serial.println(_LR_ultrasonic_dist);
 }
 
 void MSEBot::TurnOnAxis(){
   _leftMotor.writeMicroseconds(1250);
   _rightMotor.writeMicroseconds(1750);
-  delay(1000); 
 }
 
 void MSEBot::goForward(){
@@ -133,8 +138,10 @@ void MSEBot::parallelFollow(){
 		moveOut();
 	}
 	
-	if(_F_ultrasonic_dist < TURN_THRESHOLD){
+	while(_F_ultrasonic_dist < TURN_THRESHOLD){
+    Serial.print("Turning ");
 		TurnOnAxis();
+    PingUltra();
 	}
 	
 	if(abs(_LF_ultrasonic_dist - WALL_TARGET_DIST) < WALL_TARGET_TOLERANCE){
@@ -148,8 +155,7 @@ void MSEBot::parallelFollow(){
 bool MSEBot::checkForCube(){
 	int cx, cy, cz;
 	//monitor compass output
-	readCompass(&cx, &cy, &cz);
-
+	//readCompass(&cx, &cy, &cz);
   return 0;
 }
 
@@ -164,14 +170,7 @@ void MSEBot::GO(){
 			{
 				PingUltra();
 				parallelFollow();
-				_hasCube = checkForCube();
-          Serial.print("F: ");
-  Serial.print(_F_ultrasonic_dist);
-  Serial.print(" LF: ");
-  Serial.print(_LF_ultrasonic_dist);
-  Serial.print("  LR: ");
-  Serial.println(_LR_ultrasonic_dist);
-        
+				_hasCube = checkForCube();        
 			}
 			_currentTask++;  //This task completed, proceed to next task
 		}
