@@ -172,7 +172,11 @@ bool MSEBot::checkForCube(){
     _clawMotor.write(CUBE_INTAKE_CLOSE); // closed position
   }
   
+<<<<<<< HEAD
   return 1;
+=======
+  return (abs(analogRead(HALL_EFFECT) - _HallValue) > HALL_EFFECT_THRESHOLD);
+>>>>>>> fdf9130daec810506541d0a83c9413e815277902
 }
 
 void MSEBot::GO(){
