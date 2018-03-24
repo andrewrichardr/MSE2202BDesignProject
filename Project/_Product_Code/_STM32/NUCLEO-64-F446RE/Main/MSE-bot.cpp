@@ -26,7 +26,7 @@ void MSEBot::init(){
 
   _armMotor.write(100); // slightly above horizontal
   _clawMotor.write(CUBE_INTAKE_OPEN); // open position
-  _HallValue = HALL_EFFECT.analogRead();
+  _HallValue = analogRead(HALL_EFFECT);
   initCompass();
 
   Serial.println("Initialized!");
@@ -161,11 +161,11 @@ bool MSEBot::checkForCube(){
   //monitor compass output
   readCompass(&cx, &cy, &cz);
 
-  if (abs(HALL_EFFECT.analogRead() - _HallValue) > HALL_EFFECT_THRESHOLD) {
+  if (abs(analogRead(HALL_EFFECT) - _HallValue) > HALL_EFFECT_THRESHOLD) {
     _clawMotor.write(CUBE_INTAKE_CLOSE); // closed position
   }
   
-  return (abs(HALL_EFFECT.analogRead() - _HallValue) > HALL_EFFECT_THRESHOLD);
+  return (abs(analogRead(HALL_EFFECT) - _HallValue) > HALL_EFFECT_THRESHOLD);
 }
 
 void MSEBot::GO(){
