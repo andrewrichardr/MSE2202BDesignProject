@@ -26,7 +26,7 @@ void MSEBot::init(){
 
   _armMotor.write(100); // slightly above horizontal
   _clawMotor.write(CUBE_INTAKE_OPEN); // open position
-  _HallValue = HALL_EFFECT.analogRead();
+  _HallValue = analogRead(HALL_EFFECT);
   initCompass();
 
   Serial.println("Initialized!");
@@ -51,6 +51,13 @@ void MSEBot::PingUltra(){
   digitalWrite(LR_ULTRASONIC_IN, LOW);
   _LRecho = pulseIn(LR_ULTRASONIC_OUT, HIGH, 10000);
   if(_LRecho) _LR_ultrasonic_dist = _LRecho;
+
+  Serial.print("F: ");
+  Serial.print(_F_ultrasonic_dist);
+  Serial.print(" LF: ");
+  Serial.print(_LF_ultrasonic_dist);
+  Serial.print("  LR: ");
+  Serial.println(_LR_ultrasonic_dist);
 
 }
 
@@ -161,11 +168,11 @@ bool MSEBot::checkForCube(){
   //monitor compass output
   readCompass(&cx, &cy, &cz);
 
-  if (abs(HALL_EFFECT.analogRead() - _HallValue) > HALL_EFFECT_THRESHOLD) {
+  if (abs(analogRead(HALL_EFFECT) - _HallValue) > HALL_EFFECT_THRESHOLD) {
     _clawMotor.write(CUBE_INTAKE_CLOSE); // closed position
   }
   
-  return (abs(HALL_EFFECT.analogRead() - _HallValue) > HALL_EFFECT_THRESHOLD);
+  return 1;
 }
 
 void MSEBot::GO(){
@@ -180,12 +187,8 @@ void MSEBot::GO(){
         PingUltra();
         parallelFollow();
         _hasCube = checkForCube();
-          Serial.print("F: ");
-  Serial.print(_F_ultrasonic_dist);
-  Serial.print(" LF: ");
-  Serial.print(_LF_ultrasonic_dist);
-  Serial.print("  LR: ");
-  Serial.println(_LR_ultrasonic_dist);
+
+
         
       }
       _currentTask++;  //This task completed, proceed to next task
