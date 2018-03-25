@@ -1,9 +1,0 @@
-Arduino15/packages/STM32/hardware/stm32/2018.1.18/libraries/Wire/src/Wire.h
-Added:
-extern TwoWire Wire1;
-extern TwoWire Wire2;
-
-
-Arduino15/packages/STM32/hardware/stm32/2018.1.18/variants/NUCLEO_F446RE/variant.h
-Added:
-#define ALL_HWSERIAL
