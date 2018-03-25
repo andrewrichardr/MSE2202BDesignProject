@@ -17,10 +17,14 @@ void MSEBot::init(){
   pinMode(RIGHT_MOTOR, OUTPUT);
   pinMode(CUBE_INTAKE_1, OUTPUT);
   pinMode(CUBE_INTAKE_2, OUTPUT);
+  pinMode(PYR_INTAKE_LIFT, OUTPUT);
+  pinMode(PYR_INTAKE_WHEELS, OUTPUT);
   _leftMotor.attach(LEFT_MOTOR);
   _rightMotor.attach(RIGHT_MOTOR);
-  _armMotor.attach(CUBE_INTAKE_1);
-  _clawMotor.attach(CUBE_INTAKE_2);
+  _armMotor.attach(CUBE_INTAKE_ARM);
+  _clawMotor.attach(CUBE_INTAKE_CLAW);
+  _liftMotor.attach(PYR_INTAKE_LIFT);
+  _intakeMotor.attach(PYR_INTAKE_WHEELS);
   
   pinMode(HALL_EFFECT, INPUT);
 
@@ -52,21 +56,12 @@ void MSEBot::PingUltra(){
   _LRecho = pulseIn(LR_ULTRASONIC_OUT, HIGH, 10000);
   if(_LRecho) _LR_ultrasonic_dist = _LRecho;
 
-  Serial.print("F: ");
-  Serial.print(_F_ultrasonic_dist);
-  Serial.print(" LF: ");
-  Serial.print(_LF_ultrasonic_dist);
-  Serial.print("  LR: ");
-  Serial.println(_LR_ultrasonic_dist);
-
 }
 
-void MSEBot::TurnOnAxis(){
-  _armMotor.write(100); // lift arm slightly to be above wall
+void MSEBot::TurnOnAxis(int deg){
   _leftMotor.writeMicroseconds(TURN_AXIS_R);
   _rightMotor.writeMicroseconds(TURN_AXIS_F);
-  delay(1000); 
-  _armMotor.write(80); // pushed against top of wall
+  delay(deg * 11); 
 }
 
 void MSEBot::goForward(){
@@ -152,7 +147,9 @@ void MSEBot::parallelFollow(){
   }
   
   if(_F_ultrasonic_dist < TURN_THRESHOLD){
-    TurnOnAxis();
+  _armMotor.write(100); // lift arm slightly to be above wall
+    TurnOnAxis(90);
+  _armMotor.write(80); // pushed against top of wall
   }
   
   if(abs(_LF_ultrasonic_dist - WALL_TARGET_DIST) < WALL_TARGET_TOLERANCE){
@@ -172,8 +169,22 @@ bool MSEBot::checkForCube(){
     _clawMotor.write(CUBE_INTAKE_CLOSE); // closed position
   }
   
-  return 1;
+  return (abs(analogRead(HALL_EFFECT) - _HallValue) > HALL_EFFECT_THRESHOLD);
 }
+
+void MSEBot::placePyramid() {
+  _liftMotor.write(PYR_INTAKE_UP);
+  _armMotor.write(0); // some value close to ground
+  _clawMotor.write(CUBE_INTAKE_OPEN);
+  delay(100);
+  _leftMotor.writeMicroseconds(FORWARD_SPEED);
+  _rightMotor.writeMicroseconds(FORWARD_SPEED);
+  delay(300); // test this value
+  TurnOnAxis(45); // test this value
+  delay(100);
+  _liftMotor.write(PYR_INTAKE_DOWN);
+  intakeMotor.writeMicroseconds(1250); // push pyramid back out
+} 
 
 void MSEBot::GO(){
 
@@ -187,22 +198,26 @@ void MSEBot::GO(){
         PingUltra();
         parallelFollow();
         _hasCube = checkForCube();
-
-
+          Serial.print("F: ");
+  Serial.print(_F_ultrasonic_dist);
+  Serial.print(" LF: ");
+  Serial.print(_LF_ultrasonic_dist);
+  Serial.print("  LR: ");
+  Serial.println(_LR_ultrasonic_dist);
         
       }
       _currentTask++;  //This task completed, proceed to next task
     }
     case 2: //Finding the Pyramid
     {
-    Serial.println("Searching for the Pyramid...");
+    Serial.println("Searching for the Pyramid..."); // stop after limit switch detects pyramid
 
       _currentTask++;  //This task completed, proceed to next task
     }
     case 3: //Inserting the Cube in the Pyramid
     {
     Serial.println("Loading Cube into Pyramid...");
-
+    placePyramid();
       _currentTask++;  //This task completed, proceed to next task
     }
     case 4:
