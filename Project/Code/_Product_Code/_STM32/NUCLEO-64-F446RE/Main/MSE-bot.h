@@ -5,6 +5,9 @@
 //  Part Number: F446RE
 //  Upload Method: STLink
 
+//Andrew Randell
+//Fan Kang
+
 #include <Wire.h>
 #include <Stream.h>
 #include <SPI.h>
