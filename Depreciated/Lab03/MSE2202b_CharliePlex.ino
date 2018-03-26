@@ -2,6 +2,7 @@
 
 #include <Servo.h>
 
+#include <iostream>
 
 // MSE 2202B Charlieplex test code
 /*
