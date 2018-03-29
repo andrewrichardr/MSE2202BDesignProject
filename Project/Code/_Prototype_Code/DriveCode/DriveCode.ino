@@ -37,6 +37,8 @@ unsigned long Fecho;
 
 int x, y, z;
 
+bool turning = 0;
+
 void lmswitch(){
   
   
@@ -44,7 +46,7 @@ void lmswitch(){
 
 void setup() {
   // put your setup code here, to run once:
-  Serial.begin(9600);
+  Serial.begin(115200);
 
   pinMode(LR_ULTRASONIC_IN, OUTPUT);
   pinMode(LF_ULTRASONIC_IN, OUTPUT);
@@ -88,16 +90,17 @@ void loop() {
     Serial.print("Move Out  ");
   }
 
-  if(F_ultrasonic_dist < 1000){
+  while(F_ultrasonic_dist < 1000){
     TurnOnAxis();
+    Serial.println("Turning");
+    pingF();
   }
-  
-  Serial.print("F: ");
-  Serial.print(F_ultrasonic_dist);
-  Serial.print(" LF: ");
+
   Serial.print(LF_ultrasonic_dist);
-  Serial.print("  LR: ");
-  Serial.println(LR_ultrasonic_dist);
+  Serial.print(" ");
+  Serial.print(LR_ultrasonic_dist);
+  Serial.print(" ");
+  Serial.println(F_ultrasonic_dist);
 
 }
 
@@ -132,9 +135,8 @@ void pingF(){
 }
 
 void TurnOnAxis(){
-  leftMotor.writeMicroseconds(1250);
-  rightMotor.writeMicroseconds(1750);
-  delay(1000); 
+  leftMotor.writeMicroseconds(1150);
+  rightMotor.writeMicroseconds(1850);
 }
 
 void goForward(){

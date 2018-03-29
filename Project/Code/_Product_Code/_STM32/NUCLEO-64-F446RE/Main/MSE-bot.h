@@ -78,6 +78,8 @@ private:
   unsigned long _LFecho;
   unsigned long _Fecho;
   unsigned long _HallValue;
+  char _IRValue = 0;
+  bool _IRsw = 1; // 1 for AE, 0 for IO
 
   int _cx, _cy, _cz;
 
@@ -94,7 +96,7 @@ private:
   void goForward();
   void moveIn();
   void moveOut();
-  int scanIR();
+  char scanIR();
   void initCompass();
   void readCompass(int* x, int* y, int* z);
   bool checkForCube();

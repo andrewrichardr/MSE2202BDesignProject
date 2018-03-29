@@ -15,8 +15,8 @@ void MSEBot::init(){
 
   pinMode(LEFT_MOTOR, OUTPUT);
   pinMode(RIGHT_MOTOR, OUTPUT);
-  pinMode(CUBE_INTAKE_1, OUTPUT);
-  pinMode(CUBE_INTAKE_2, OUTPUT);
+  pinMode(CUBE_INTAKE_ARM, OUTPUT);
+  pinMode(CUBE_INTAKE_CLAW, OUTPUT);
   pinMode(PYR_INTAKE_LIFT, OUTPUT);
   pinMode(PYR_INTAKE_WHEELS, OUTPUT);
   _leftMotor.attach(LEFT_MOTOR);
@@ -80,7 +80,7 @@ void MSEBot::moveOut(){
 }
 
 
-int MSEBot::scanIR(){
+char MSEBot::scanIR(){
   return Serial3.read(); //Attached to CN10-2-3
 }
 
@@ -147,9 +147,9 @@ void MSEBot::parallelFollow(){
   }
   
   if(_F_ultrasonic_dist < TURN_THRESHOLD){
-  _armMotor.write(100); // lift arm slightly to be above wall
+	_armMotor.write(100); // lift arm slightly to be above wall
     TurnOnAxis(90);
-  _armMotor.write(80); // pushed against top of wall
+	_armMotor.write(80); // pushed against top of wall
   }
   
   if(abs(_LF_ultrasonic_dist - WALL_TARGET_DIST) < WALL_TARGET_TOLERANCE){
@@ -173,18 +173,18 @@ bool MSEBot::checkForCube(){
 }
 
 void MSEBot::placePyramid() {
-  _liftMotor.write(PYR_INTAKE_UP);
-  _armMotor.write(0); // some value close to ground
-  _clawMotor.write(CUBE_INTAKE_OPEN);
-  delay(100);
-  _leftMotor.writeMicroseconds(FORWARD_SPEED);
-  _rightMotor.writeMicroseconds(FORWARD_SPEED);
-  delay(300); // test this value
-  TurnOnAxis(45); // test this value
-  delay(100);
-  _liftMotor.write(PYR_INTAKE_DOWN);
-  intakeMotor.writeMicroseconds(1250); // push pyramid back out
-} 
+	_liftMotor.write(PYR_INTAKE_UP);
+	_armMotor.write(0); // some value close to ground
+	_clawMotor.write(CUBE_INTAKE_OPEN);
+	delay(100);
+	_leftMotor.writeMicroseconds(FORWARD_SPEED);
+	_rightMotor.writeMicroseconds(FORWARD_SPEED);
+	delay(300); // test this value
+	TurnOnAxis(45); // test this value
+	delay(100);
+	_liftMotor.write(PYR_INTAKE_DOWN);
+	_intakeMotor.writeMicroseconds(1250); // push pyramid back out
+}	
 
 void MSEBot::GO(){
 
@@ -211,13 +211,30 @@ void MSEBot::GO(){
     case 2: //Finding the Pyramid
     {
     Serial.println("Searching for the Pyramid..."); // stop after limit switch detects pyramid
-
+	_leftMotor.writeMicroseconds(1600);
+	_rightMotor.writeMicroseconds(1400); // hopefully some really slow speed
+	while(true) {
+		_IRValue = scanIR();
+		if(_IRsw) {
+			if (_IRValue == 'A' || _IRValue == 'E') {
+				break;
+			}
+		else {
+			if (_IRValue == 'I' || _IRValue == 'O') {
+				break;
+			}
+		}
+	}
+	while(!digitalRead(LIMIT_SWITCH)) {
+		goForward();
+		_intakeMotor.writeMicroseconds(1750);
+	}
       _currentTask++;  //This task completed, proceed to next task
     }
     case 3: //Inserting the Cube in the Pyramid
     {
     Serial.println("Loading Cube into Pyramid...");
-    placePyramid();
+		placePyramid();
       _currentTask++;  //This task completed, proceed to next task
     }
     case 4:

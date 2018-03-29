@@ -6,6 +6,7 @@ void setup(){
 }
 
 void loop() {
-  Robot.GO();
+  //Robot.GO();
+  Robot.parallelFollow();
 }
 
