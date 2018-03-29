@@ -1,43 +1,57 @@
 #include "MSE-Bot.h"
 
 void MSEBot::init(){
-  Serial.begin(9600);
-  Serial1.begin(115200);  //UART1 for external Ultrasonic Controller
-  Serial3.begin(2400);    //UART3 for IR sensor
+  //Robot Initialization Function, Call this in setup() of the Arduino Sketch
+  int initTime = millis();
 
+  //Initialize Buses
+  Serial.begin(9600);
+  //Serial1.begin(115200);  //UART1 for external Ultrasonic Controller
+  Serial3.begin(2400);    //UART3 for IR sensor
+  Serial4.begin(2400);    //UART4 for IR sensor
+  Wire.begin();           //I2C1 for Compass and Accel
+  Wire.setClock(400000);
+
+  //Initialize GPIO Pins
+  pinMode(13, OUTPUT);
   pinMode(LR_ULTRASONIC_IN, OUTPUT);
   pinMode(LF_ULTRASONIC_IN, OUTPUT);
   pinMode(F_ULTRASONIC_IN, OUTPUT);
   pinMode(LR_ULTRASONIC_OUT, INPUT);
   pinMode(LF_ULTRASONIC_OUT, INPUT);
   pinMode(F_ULTRASONIC_OUT, INPUT);
-
-
   pinMode(LEFT_MOTOR, OUTPUT);
   pinMode(RIGHT_MOTOR, OUTPUT);
   pinMode(CUBE_INTAKE_ARM, OUTPUT);
   pinMode(CUBE_INTAKE_CLAW, OUTPUT);
   pinMode(PYR_INTAKE_LIFT, OUTPUT);
   pinMode(PYR_INTAKE_WHEELS, OUTPUT);
+  pinMode(START_SW, INPUT);
+
+  //Initialize Actuators
   _leftMotor.attach(LEFT_MOTOR);
   _rightMotor.attach(RIGHT_MOTOR);
   _armMotor.attach(CUBE_INTAKE_ARM);
   _clawMotor.attach(CUBE_INTAKE_CLAW);
   _liftMotor.attach(PYR_INTAKE_LIFT);
   _intakeMotor.attach(PYR_INTAKE_WHEELS);
-  
-  pinMode(HALL_EFFECT, INPUT);
-
   _armMotor.write(100); // slightly above horizontal
   _clawMotor.write(CUBE_INTAKE_OPEN); // open position
-  _HallValue = analogRead(HALL_EFFECT);
-  initCompass();
 
-  Serial.println("Initialized!");
+  //Initialize Sensors
+  AccelMag = Adafruit_LSM303_Mag_Unified(12345);
+  AccelMag.enableAutoRange(true);
+
+  Serial.println("Initialized in "); Serial.print(initTime-millis()); Serial.println("ms! Starting operation on request!");
+
+  digitalWrite(13, HIGH);
+  digitalWrite(START_SW, HIGH);
+  while(1) {
+    if(!digitalRead(START_SW)) break;   //Initializes then waits for the signal to start going, possibly do this over WiFi in a future version
+  }
 }
 
 void MSEBot::PingUltra(){
-
   digitalWrite(F_ULTRASONIC_IN, HIGH);
   delayMicroseconds(10); 
   digitalWrite(F_ULTRASONIC_IN, LOW);
@@ -55,124 +69,157 @@ void MSEBot::PingUltra(){
   digitalWrite(LR_ULTRASONIC_IN, LOW);
   _LRecho = pulseIn(LR_ULTRASONIC_OUT, HIGH, 10000);
   if(_LRecho) _LR_ultrasonic_dist = _LRecho;
-
 }
 
-void MSEBot::TurnOnAxis(int deg){
-  _leftMotor.writeMicroseconds(TURN_AXIS_R);
-  _rightMotor.writeMicroseconds(TURN_AXIS_F);
-  delay(deg * 11); 
+void MSEBot::TurnOnAxisL(){
+  if(_speedMode){
+    _leftMotor.writeMicroseconds(FORWARD_SPEED_FAST);
+    _rightMotor.writeMicroseconds(REVERSE_SPEED_FAST);
+  }
+  else{
+    _leftMotor.writeMicroseconds(FORWARD_SPEED_SLOW);
+    _rightMotor.writeMicroseconds(REVERSE_SPEED_SLOW);
+  }
+}
+
+void MSEBot::TurnOnAxisR(){
+  if(_speedMode){
+    _leftMotor.writeMicroseconds(REVERSE_SPEED_FAST);
+    _rightMotor.writeMicroseconds(FORWARD_SPEED_FAST);
+  }
+  else{
+    _leftMotor.writeMicroseconds(REVERSE_SPEED_SLOW);
+    _rightMotor.writeMicroseconds(FORWARD_SPEED_SLOW);
+  }
+}
+
+void MSEBot::StopDrive(){
+  _leftMotor.writeMicroseconds(STOP_VALUE);
+  _rightMotor.writeMicroseconds(STOP_VALUE);
 }
 
 void MSEBot::goForward(){
-  _leftMotor.writeMicroseconds(FORWARD_SPEED);
-  _rightMotor.writeMicroseconds(FORWARD_SPEED);
+  if(_speedMode){
+    _leftMotor.writeMicroseconds(FORWARD_SPEED_FAST);
+    _rightMotor.writeMicroseconds(FORWARD_SPEED_FAST);
+  }
+  else{
+    _leftMotor.writeMicroseconds(FORWARD_SPEED_SLOW);
+    _rightMotor.writeMicroseconds(FORWARD_SPEED_SLOW);
+  }
+}
+
+void MSEBot::goReverse(){
+  if(_speedMode){
+    _leftMotor.writeMicroseconds(REVERSE_SPEED_FAST);
+    _rightMotor.writeMicroseconds(REVERSE_SPEED_FAST);
+  }
+  else{
+    _leftMotor.writeMicroseconds(REVERSE_SPEED_SLOW);
+    _rightMotor.writeMicroseconds(REVERSE_SPEED_SLOW);
+  }
 }
 
 void MSEBot::moveIn(){
-  _leftMotor.writeMicroseconds(FORWARD_SPEED);
-  _rightMotor.writeMicroseconds(1500);
+  if(_speedMode){
+    _leftMotor.writeMicroseconds(STOP_VALUE);
+    _rightMotor.writeMicroseconds(FORWARD_SPEED_FAST);
+  }
+  else{
+    _leftMotor.writeMicroseconds(STOP_VALUE);
+    _rightMotor.writeMicroseconds(FORWARD_SPEED_SLOW);
+  }
 }
 
 void MSEBot::moveOut(){
-  _leftMotor.writeMicroseconds(1500);
-  _rightMotor.writeMicroseconds(FORWARD_SPEED); 
-}
-
-
-char MSEBot::scanIR(){
-  return Serial3.read(); //Attached to CN10-2-3
-}
-
-void MSEBot::readCompass(int* x, int* y, int* z){
-  // Start readout at X MSB address
-  Wire.beginTransmission(MAG3110_I2C_ADDRESS);
-  Wire.write(MAG3110_OUT_X_MSB);
-  Wire.endTransmission();
-
-  delayMicroseconds(2);
-
-  // Read out data using multiple byte read mode
-  Wire.requestFrom(MAG3110_I2C_ADDRESS, 6);
-  while( Wire.available() != 6 ) {}
-
-  // Combine registers
-  uint16_t values[3];
-  for(uint8_t idx = 0; idx <= 2; idx++)
-  {
-    values[idx]  = Wire.read() << 8;  // MSB
-    values[idx] |= Wire.read();     // LSB
+  if(_speedMode){
+    _leftMotor.writeMicroseconds(FORWARD_SPEED_FAST);
+    _rightMotor.writeMicroseconds(STOP_VALUE);
   }
-
-  // Put data into referenced variables
-  *x = (int) values[0];
-  *y = (int) values[1];
-  *z = (int) values[2];
-}
-
-void MSEBot::initCompass(){
-  Wire.begin();
-  Wire.setClock(400000);
-  
-  uint8_t MODE;
-  
-  Wire.beginTransmission(MAG3110_I2C_ADDRESS);
-  Wire.write(MAG3110_CTRL_REG1);
-  Wire.endTransmission();
-  
-  delayMicroseconds(2);
-  
-  Wire.requestFrom(MAG3110_I2C_ADDRESS, 1);
-  while(Wire.available())
-  {
-    MODE = Wire.read();
+  else{
+    _leftMotor.writeMicroseconds(FORWARD_SPEED_SLOW);
+    _rightMotor.writeMicroseconds(STOP_VALUE);
   }
-  
-  Wire.beginTransmission(MAG3110_I2C_ADDRESS);
-  Wire.write(MAG3110_CTRL_REG1);
-  Wire.write((MODE | MAG3110_ACTIVE_MODE));
-  Wire.endTransmission();
 }
 
+bool MSEBot::scanIRFocused(){
+  char value = Serial3.read();
+  int idx1, idx2;
+  if(_IRsw){
+    idx1 = 0;
+    idx2 = 1;
+  }
+  else{
+    idx1 = 2;
+    idx2 = 3;
+  }
+  if(value == _IRValues[idx1] || value == _IRValues[idx2]){
+    return 1;
+  } 
+  else{
+    return 0;
+  }
+}
+
+bool MSEBot::scanIRWide(){
+  char value = Serial4.read();
+  int idx1, idx2;
+  if(_IRsw){
+    idx1 = 0;
+    idx2 = 1;
+  }
+  else{
+    idx1 = 2;
+    idx2 = 3;
+  }
+  if(value == _IRValues[idx1] || value == _IRValues[idx2]){
+    return 1;
+  } 
+  else{
+    return 0;
+  }
+}
+
+void MSEBot::readCompass(){
+  AccelMag.getEvent(&compassData);
+  _compassMagnitude = sqrt(pow(AccelMag.raw.x, 2)+pow(AccelMag.raw.y, 2)+pow(AccelMag.raw.z, 2));
+  //_compassHeading = atan2(AccelMag.magnetic.x, AccelMag.magnetic.y)*180/3.14159;
+}
+
+short MSEBot::checkForCube(){
+  readCompass();
+  if(_compassMagnitude > CUBE_MAG_ACCURATE_THRESH) return 1;  //return 1 if the mag field exceeds the threshold of the cube being held in the claw
+  if(_compassMagnitude > CUBE_MAG_GEN_THRESH) return 2;       //return 2 if the mag field exceeds the threshold of the cube being in the vicinity of the claw
+  else return 0;                                              //return 0 if the cube is not near by
+}
 
 void MSEBot::parallelFollow(){
-  if(abs(_LF_ultrasonic_dist - _LR_ultrasonic_dist) < PARALLEL_TOLERANCE){
+  unsigned int parallel = abs(_LF_ultrasonic_dist - _LR_ultrasonic_dist);
+  unsigned int distance = abs(_LF_ultrasonic_dist - WALL_TARGET_DIST);
+
+  if(parallel < PARALLEL_TOLERANCE && distance < WALL_TARGET_TOLERANCE){ //Everything is fine and dandy
     goForward();
   }
-  else if(_LF_ultrasonic_dist > _LR_ultrasonic_dist){
+  else if(_LF_ultrasonic_dist > _LR_ultrasonic_dist && distance < WALL_TARGET_TOLERANCE){ //Distance is ok, Robot is not parallel
     moveIn();
   }
-  else{
+  else if(_LF_ultrasonic_dist < _LR_ultrasonic_dist && distance < WALL_TARGET_TOLERANCE){ //Distance is ok, Robot is not parallel
     moveOut();
   }
-  
-  if(_F_ultrasonic_dist < TURN_THRESHOLD){
-	_armMotor.write(100); // lift arm slightly to be above wall
-    TurnOnAxis(90);
-	_armMotor.write(80); // pushed against top of wall
+  else if(_LF_ultrasonic_dist < WALL_TARGET_DIST ){ //Distance is too close
+    moveOut();
   }
-  
-  if(abs(_LF_ultrasonic_dist - WALL_TARGET_DIST) < WALL_TARGET_TOLERANCE){
+  else{ //Distance is too far
     moveIn();
   }
-  else{
-    moveOut();
+    
+  while(_F_ultrasonic_dist < TURN_THRESHOLD){ //Turn until Front Ultrasonic is measureing a large distance
+    TurnOnAxisL();
+    PingUltra();
   }
 }
 
-bool MSEBot::checkForCube(){
-  int cx, cy, cz;
-  //monitor compass output
-  readCompass(&cx, &cy, &cz);
-
-  if (abs(analogRead(HALL_EFFECT) - _HallValue) > HALL_EFFECT_THRESHOLD) {
-    _clawMotor.write(CUBE_INTAKE_CLOSE); // closed position
-  }
-  
-  return (abs(analogRead(HALL_EFFECT) - _HallValue) > HALL_EFFECT_THRESHOLD);
-}
-
-void MSEBot::placePyramid() {
+void MSEBot::placePyramid() {/*
 	_liftMotor.write(PYR_INTAKE_UP);
 	_armMotor.write(0); // some value close to ground
 	_clawMotor.write(CUBE_INTAKE_OPEN);
@@ -180,72 +227,26 @@ void MSEBot::placePyramid() {
 	_leftMotor.writeMicroseconds(FORWARD_SPEED);
 	_rightMotor.writeMicroseconds(FORWARD_SPEED);
 	delay(300); // test this value
-	TurnOnAxis(45); // test this value
+	TurnOnAxisL(); // test this value
 	delay(100);
 	_liftMotor.write(PYR_INTAKE_DOWN);
 	_intakeMotor.writeMicroseconds(1250); // push pyramid back out
+  */
 }	
 
-void MSEBot::GO(){
-
-  switch(_currentTask)
-  {
-    case 1: //Finding the Cube
-    {
-    Serial.println("Searching for the cube...");
-      while(!_hasCube)
-      {
-        PingUltra();
-        parallelFollow();
-        _hasCube = checkForCube();
-          Serial.print("F: ");
-  Serial.print(_F_ultrasonic_dist);
-  Serial.print(" LF: ");
-  Serial.print(_LF_ultrasonic_dist);
-  Serial.print("  LR: ");
-  Serial.println(_LR_ultrasonic_dist);
-        
-      }
-      _currentTask++;  //This task completed, proceed to next task
-    }
-    case 2: //Finding the Pyramid
-    {
-    Serial.println("Searching for the Pyramid..."); // stop after limit switch detects pyramid
-	_leftMotor.writeMicroseconds(1600);
-	_rightMotor.writeMicroseconds(1400); // hopefully some really slow speed
-	while(true) {
-		_IRValue = scanIR();
-		if(_IRsw) {
-			if (_IRValue == 'A' || _IRValue == 'E') {
-				break;
-			}
-		else {
-			if (_IRValue == 'I' || _IRValue == 'O') {
-				break;
-			}
-		}
-	}
-	while(!digitalRead(LIMIT_SWITCH)) {
-		goForward();
-		_intakeMotor.writeMicroseconds(1750);
-	}
-      _currentTask++;  //This task completed, proceed to next task
-    }
-    case 3: //Inserting the Cube in the Pyramid
-    {
-    Serial.println("Loading Cube into Pyramid...");
-		placePyramid();
-      _currentTask++;  //This task completed, proceed to next task
-    }
-    case 4:
-    {
-      while(1)
-      {
-        Serial.println("TASK COMPLETED!!");
-        Serial.println("please reset!");
-        delay(1000);
-      }
-    }
+void MSEBot::setSpeed(bool speed){
+  if(speed){ //speed == 1: FAST
+    _speedMode = 1;
+  }
+  else{ //speed == 0: SLOW
+    _speedMode = 0;
   }
 }
 
+void MSEBot::closeClaw(){
+  _clawMotor.write(CUBE_INTAKE_CLOSE);
+}
+
+void MSEBot::openClaw(){
+  _clawMotor.write(CUBE_INTAKE_OPEN);
+}
