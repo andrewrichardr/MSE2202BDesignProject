@@ -6,6 +6,7 @@ void setup() {
 }
 
 void loop() {
+  /*
     while (true) { //Loop until finds the cube;
         Robot.parallelFollow();
         if (Robot.checkForCube()) {
@@ -38,4 +39,6 @@ void loop() {
     while(true){
       
     }
+    */
+    Robot.parallelFollow();
 }

@@ -5,7 +5,7 @@ void MSEBot::init(){
   int initTime = millis();
 
   //Initialize Buses
-  Serial.begin(9600);
+  Serial.begin(115200);
   //Serial1.begin(115200);  //UART1 for external Ultrasonic Controller
   Serial3.begin(2400);    //UART3 for IR sensor
   Serial4.begin(2400);    //UART4 for IR sensor
@@ -37,38 +37,42 @@ void MSEBot::init(){
   _intakeMotor.attach(PYR_INTAKE_WHEELS);
   _armMotor.write(100); // slightly above horizontal
   _clawMotor.write(CUBE_INTAKE_OPEN); // open position
+  _liftMotor.write(PYR_INTAKE_UP); // up position
 
   //Initialize Sensors
   AccelMag = Adafruit_LSM303_Mag_Unified(12345);
   AccelMag.enableAutoRange(true);
 
   Serial.println("Initialized in "); Serial.print(initTime-millis()); Serial.println("ms! Starting operation on request!");
-
+/*
   digitalWrite(13, HIGH);
   digitalWrite(START_SW, HIGH);
   while(1) {
-    if(!digitalRead(START_SW)) break;   //Initializes then waits for the signal to start going, possibly do this over WiFi in a future version
+    if(digitalRead(START_SW)) break;   //Initializes then waits for the signal to start going, possibly do this over WiFi in a future version
   }
+  */
 }
-
+#define PING_MS 10
 void MSEBot::PingUltra(){
   digitalWrite(F_ULTRASONIC_IN, HIGH);
-  delayMicroseconds(10); 
+  delayMicroseconds(PING_MS); 
   digitalWrite(F_ULTRASONIC_IN, LOW);
   _Fecho = pulseIn(F_ULTRASONIC_OUT, HIGH, 10000);
   if(_Fecho) _F_ultrasonic_dist = _Fecho;
 
   digitalWrite(LF_ULTRASONIC_IN, HIGH);
-  delayMicroseconds(10);  
+  delayMicroseconds(PING_MS);  
   digitalWrite(LF_ULTRASONIC_IN, LOW);
   _LFecho = pulseIn(LF_ULTRASONIC_OUT, HIGH, 10000);
   if(_LFecho) _LF_ultrasonic_dist = _LFecho;
 
   digitalWrite(LR_ULTRASONIC_IN, HIGH);
-  delayMicroseconds(10);  
+  delayMicroseconds(PING_MS);  
   digitalWrite(LR_ULTRASONIC_IN, LOW);
   _LRecho = pulseIn(LR_ULTRASONIC_OUT, HIGH, 10000);
   if(_LRecho) _LR_ultrasonic_dist = _LRecho;
+
+  //Serial.print(" F: "); Serial.print(_F_ultrasonic_dist); Serial.print(" LF: "); Serial.print(_LF_ultrasonic_dist); Serial.print(" LR: "); Serial.println(_LR_ultrasonic_dist);
 }
 
 void MSEBot::TurnOnAxisL(){
@@ -107,6 +111,7 @@ void MSEBot::goForward(){
     _leftMotor.writeMicroseconds(FORWARD_SPEED_SLOW);
     _rightMotor.writeMicroseconds(FORWARD_SPEED_SLOW);
   }
+  Serial.println("Forward");
 }
 
 void MSEBot::goReverse(){
@@ -118,6 +123,7 @@ void MSEBot::goReverse(){
     _leftMotor.writeMicroseconds(REVERSE_SPEED_SLOW);
     _rightMotor.writeMicroseconds(REVERSE_SPEED_SLOW);
   }
+    Serial.println("Reverse");
 }
 
 void MSEBot::moveIn(){
@@ -129,6 +135,7 @@ void MSEBot::moveIn(){
     _leftMotor.writeMicroseconds(STOP_VALUE);
     _rightMotor.writeMicroseconds(FORWARD_SPEED_SLOW);
   }
+    Serial.println("in");
 }
 
 void MSEBot::moveOut(){
@@ -140,6 +147,7 @@ void MSEBot::moveOut(){
     _leftMotor.writeMicroseconds(FORWARD_SPEED_SLOW);
     _rightMotor.writeMicroseconds(STOP_VALUE);
   }
+    Serial.println("out");
 }
 
 bool MSEBot::scanIRFocused(){
@@ -184,6 +192,8 @@ void MSEBot::readCompass(){
   AccelMag.getEvent(&compassData);
   _compassMagnitude = sqrt(pow(AccelMag.raw.x, 2)+pow(AccelMag.raw.y, 2)+pow(AccelMag.raw.z, 2));
   //_compassHeading = atan2(AccelMag.magnetic.x, AccelMag.magnetic.y)*180/3.14159;
+
+  Serial.print(" MAG: "); Serial.println(_compassMagnitude);
 }
 
 short MSEBot::checkForCube(){
@@ -194,6 +204,7 @@ short MSEBot::checkForCube(){
 }
 
 void MSEBot::parallelFollow(){
+  PingUltra();
   unsigned int parallel = abs(_LF_ultrasonic_dist - _LR_ultrasonic_dist);
   unsigned int distance = abs(_LF_ultrasonic_dist - WALL_TARGET_DIST);
 
@@ -213,7 +224,7 @@ void MSEBot::parallelFollow(){
     moveIn();
   }
     
-  while(_F_ultrasonic_dist < TURN_THRESHOLD){ //Turn until Front Ultrasonic is measureing a large distance
+  while(_F_ultrasonic_dist < 2*TURN_THRESHOLD){ //Turn until Front Ultrasonic is measureing a large distance
     TurnOnAxisL();
     PingUltra();
   }
