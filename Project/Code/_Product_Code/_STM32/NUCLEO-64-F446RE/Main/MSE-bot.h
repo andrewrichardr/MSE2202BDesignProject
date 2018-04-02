@@ -13,18 +13,16 @@
 #include <Adafruit_LSM303_U.h>
 #include <math.h>
 
-#define STARTING_TASK                     1;      // 1 = find the cube, 2 = find the pyramid, 3 = insert pyramid into cube
-
 //pin assignments
 #define LEFT_MOTOR                        PA9
 #define RIGHT_MOTOR                       PC7
 
-#define LR_ULTRASONIC_IN                  PC1
-#define LR_ULTRASONIC_OUT                 PC0
-#define LF_ULTRASONIC_IN                  PA4
-#define LF_ULTRASONIC_OUT                 PB0
-#define F_ULTRASONIC_IN                   PA0
-#define F_ULTRASONIC_OUT                  PA1
+#define LR_ULTRASONIC_IN                  PA8
+#define LR_ULTRASONIC_OUT                 PC9
+#define LF_ULTRASONIC_IN                  PB4
+#define LF_ULTRASONIC_OUT                 PB10
+#define F_ULTRASONIC_IN                   PB3
+#define F_ULTRASONIC_OUT                  PB5
 
 #define CUBE_INTAKE_ARM                   PA5
 #define CUBE_INTAKE_CLAW                  PA6
@@ -32,16 +30,17 @@
 #define PYR_INTAKE_LIFT                   PA7
 #define PYR_INTAKE_WHEELS                 PB6
 
-#define TARGET_PYR_SW                     PB13
-#define START_SW                          PB15
+#define TARGET_PYR_SW                     PB15
+#define START_SW                          PB13
 #define RF_LIMIT_SW                       PB14
 #define RR_LIMIT_SW                       PB2
 
 //Program Parameters
-#define WALL_TARGET_DIST                  200
+#define WALL_TARGET_DIST                  500
 #define WALL_TARGET_TOLERANCE             100
-#define PARALLEL_TOLERANCE                50
-#define TURN_THRESHOLD                    500
+#define PARALLEL_TOLERANCE                100
+#define TURN_THRESHOLD                    75
+0
 
 #define FORWARD_SPEED_FAST                1850
 #define REVERSE_SPEED_FAST                1150

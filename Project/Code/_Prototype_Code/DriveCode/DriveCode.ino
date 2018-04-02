@@ -9,12 +9,12 @@ Servo rightMotor;
 #define LEFT_MOTOR PA9
 #define RIGHT_MOTOR PC7
 
-#define LR_ULTRASONIC_IN PC1
-#define LR_ULTRASONIC_OUT PC0
-#define LF_ULTRASONIC_IN PA4
-#define LF_ULTRASONIC_OUT PB0
-#define F_ULTRASONIC_IN PA0
-#define F_ULTRASONIC_OUT PA1
+#define LR_ULTRASONIC_IN                  PA8
+#define LR_ULTRASONIC_OUT                 PC9
+#define LF_ULTRASONIC_IN                  PB4
+#define LF_ULTRASONIC_OUT                 PB10
+#define F_ULTRASONIC_IN                   PB3
+#define F_ULTRASONIC_OUT                  PB5
 
 #define WALL_LOWER_THRESHOLD 5
 #define WALL_UPPER_THRESHOLD 10
