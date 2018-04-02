@@ -26,6 +26,10 @@ void MSEBot::init(){
   pinMode(CUBE_INTAKE_CLAW, OUTPUT);
   pinMode(PYR_INTAKE_LIFT, OUTPUT);
   pinMode(PYR_INTAKE_WHEELS, OUTPUT);
+  pinMode(ARM_LIMIT_SW0, INPUT);
+  pinMode(ARM_LIMIT_SW1, INPUT);
+  pinMode(LIFT_LIMIT_SW0, INPUT);
+  pinMode(LIFT_LIMIT_SW1, INPUT);
   pinMode(START_SW, INPUT);
 
   //Initialize Actuators
@@ -35,9 +39,9 @@ void MSEBot::init(){
   _clawMotor.attach(CUBE_INTAKE_CLAW);
   _liftMotor.attach(PYR_INTAKE_LIFT);
   _intakeMotor.attach(PYR_INTAKE_WHEELS);
-  _armMotor.write(100); // slightly above horizontal
+  moveLift(0); // up position
+  moveArm(1); // out position
   _clawMotor.write(CUBE_INTAKE_OPEN); // open position
-  _liftMotor.write(PYR_INTAKE_UP); // up position
 
   //Initialize Sensors
   AccelMag = Adafruit_LSM303_Mag_Unified(12345);
@@ -150,6 +154,48 @@ void MSEBot::moveOut(){
     Serial.println("out");
 }
 
+void MSEBot::moveArm(bool position) {
+  if(position) { // if we want arm to extend
+    if(!_ArmPosition) { // if arm isnt already extended
+      while(!digitalRead(ARM_LIMIT_SW1)) {
+        _armMotor.writeMicroseconds(FORWARD_SPEED_SLOW); // move out until hits outer switch
+      }
+      _armMotor.writeMicroseconds(STOP_VALUE);
+      _ArmPosition = 1;
+    }
+  }
+  else { // if we want arm retracted
+    if(_ArmPosition) {
+      while(!digitalRead(ARM_LIMIT_SW0)) {
+        _armMotor.writeMicroseconds(REVERSE_SPEED_SLOW); // move in until hits inner switch
+      }
+      _armMotor.writeMicroseconds(STOP_VALUE);
+      _ArmPosition = 0;
+    }
+  }
+} 
+
+void MSEBot::moveLift(bool position) {
+  if(position) { // if we want lift down
+    if(!_LiftPosition) { // if lift up
+      while(!digitalRead(LIFT_LIMIT_SW1)) {
+        _liftMotor.writeMicroseconds(FORWARD_SPEED_SLOW); // move down until hits outer switch
+      }
+      _liftMotor.writeMicroseconds(STOP_VALUE);
+      _LiftPosition = 1;
+    }
+  }
+  else { // if we want lift retracted or up
+    if(_LiftPosition) {
+      while(!digitalRead(LIFT_LIMIT_SW0)) {
+        _liftMotor.writeMicroseconds(REVERSE_SPEED_SLOW); // move up until hits inner switch
+      }
+      _liftMotor.writeMicroseconds(STOP_VALUE);
+      _LiftPosition = 0;
+    }
+  }
+}
+
 bool MSEBot::scanIRFocused(){
   char value = Serial3.read();
   int idx1, idx2;
@@ -231,19 +277,19 @@ void MSEBot::parallelFollow(){
 }
 
 void MSEBot::placePyramid() {/*
-	_liftMotor.write(PYR_INTAKE_UP);
-	_armMotor.write(0); // some value close to ground
-	_clawMotor.write(CUBE_INTAKE_OPEN);
-	delay(100);
-	_leftMotor.writeMicroseconds(FORWARD_SPEED);
-	_rightMotor.writeMicroseconds(FORWARD_SPEED);
-	delay(300); // test this value
-	TurnOnAxisL(); // test this value
-	delay(100);
-	_liftMotor.write(PYR_INTAKE_DOWN);
-	_intakeMotor.writeMicroseconds(1250); // push pyramid back out
+  _liftMotor.write(PYR_INTAKE_UP);
+  _armMotor.write(0); // some value close to ground
+  _clawMotor.write(CUBE_INTAKE_OPEN);
+  delay(100);
+  _leftMotor.writeMicroseconds(FORWARD_SPEED);
+  _rightMotor.writeMicroseconds(FORWARD_SPEED);
+  delay(300); // test this value
+  TurnOnAxisL(); // test this value
+  delay(100);
+  _liftMotor.write(PYR_INTAKE_DOWN);
+  _intakeMotor.writeMicroseconds(1250); // push pyramid back out
   */
-}	
+} 
 
 void MSEBot::setSpeed(bool speed){
   if(speed){ //speed == 1: FAST

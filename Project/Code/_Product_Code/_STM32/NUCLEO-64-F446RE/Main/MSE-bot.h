@@ -34,22 +34,22 @@
 #define START_SW                          PB13
 #define RF_LIMIT_SW                       PB14
 #define RR_LIMIT_SW                       PB2
+#define ARM_LIMIT_SW0                       		//inner switch for retracted position
+#define ARM_LIMIT_SW1                       		//outer switch for extended position
+#define LIFT_LIMIT_SW0                       		//upper switch for retracted position
+#define LIFT_LIMIT_SW1                       		//lower switch for extended position
 
 //Program Parameters
 #define WALL_TARGET_DIST                  500
 #define WALL_TARGET_TOLERANCE             100
 #define PARALLEL_TOLERANCE                100
 #define TURN_THRESHOLD                    75
-0
 
 #define FORWARD_SPEED_FAST                1850
 #define REVERSE_SPEED_FAST                1150
 #define FORWARD_SPEED_SLOW                1650
 #define REVERSE_SPEED_SLOW                1350
 #define STOP_VALUE                        1500
-
-#define PYR_INTAKE_UP                     180     //Arbitrary Number for now
-#define PYR_INTAKE_DOWN                   0       //Arbitrary Number for now
 
 #define CUBE_MAG_GEN_THRESH               1000    //Arbitrary Number for now, Value that the magnetomoter will send then the robot is in the general vicinity of the cube
 #define CUBE_MAG_ACCURATE_THRESH          2500    //Arbitrary Number for now, Value that the magnetomoter will send then the cube is in the claw
@@ -71,6 +71,8 @@ private:
 
     char _IRValues[4] = {'A', 'E', 'I', 'O'};
     bool _IRsw = 1;
+	bool _ArmPosition = 0;
+	bool _LiftPosition = 1;
 
     int _compassHeading;
     int _compassMagnitude;
@@ -107,6 +109,8 @@ public:
     void setSpeed(bool speed);
     void closeClaw();
     void openClaw();
+	void moveArm(bool position);
+	void moveLift(bool position);
 
 
 
