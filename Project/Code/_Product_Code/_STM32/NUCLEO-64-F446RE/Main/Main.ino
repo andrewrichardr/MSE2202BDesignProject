@@ -11,7 +11,6 @@ void loop() {
         Robot.parallelFollow();
         if (Robot.checkForCube()) {
             Robot.setSpeed(0);
-            Robot.parallelFollow();
             if (Robot.checkForCube() == 1) {
                 Robot.closeClaw();
                 break; //Need to write logic if the cube does not get picked up but claw is closed
@@ -39,6 +38,10 @@ void loop() {
     while(true){
       
     }
+<<<<<<< HEAD
+}
+=======
     */
     Robot.parallelFollow();
 }
+>>>>>>> 37288715e0271c8414929802ec57a23fcb76951a
