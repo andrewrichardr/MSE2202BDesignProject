@@ -42,6 +42,6 @@ void loop() {
 }
 =======
     */
-    Robot.parallelFollow();
+    Robot.readCompass();
+    Serial.println(Robot._compassMagnitude);
 }
->>>>>>> 37288715e0271c8414929802ec57a23fcb76951a

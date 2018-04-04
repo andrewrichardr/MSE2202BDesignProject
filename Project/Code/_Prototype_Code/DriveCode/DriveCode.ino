@@ -21,8 +21,8 @@ Servo rightMotor;
 
 #define TURN_THRESHOLD 10
 
-#define FORWARD_SPEED 1850
-#define REVERSE_SPEED 1850
+#define FORWARD_SPEED 1990
+#define REVERSE_SPEED 1990
 
 #define LIMIT_SW PA3
 
@@ -46,7 +46,7 @@ void lmswitch(){
 
 void setup() {
   // put your setup code here, to run once:
-  Serial.begin(115200);
+  Serial.begin(9600);
 
   pinMode(LR_ULTRASONIC_IN, OUTPUT);
   pinMode(LF_ULTRASONIC_IN, OUTPUT);
@@ -90,11 +90,11 @@ void loop() {
     Serial.print("Move Out  ");
   }
 
-  while(F_ultrasonic_dist < 1000){
-    TurnOnAxis();
-    Serial.println("Turning");
-    pingF();
-  }
+  //while(F_ultrasonic_dist < 1000){
+  //  TurnOnAxis();
+  //  Serial.println("Turning");
+  //  pingF();
+  //}
 
   Serial.print(LF_ultrasonic_dist);
   Serial.print(" ");

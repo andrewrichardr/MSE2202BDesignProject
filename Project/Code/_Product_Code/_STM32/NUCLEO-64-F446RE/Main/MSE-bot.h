@@ -34,10 +34,10 @@
 #define START_SW                          PB13
 #define RF_LIMIT_SW                       PB14
 #define RR_LIMIT_SW                       PB2
-#define ARM_LIMIT_SW0                       		//inner switch for retracted position
-#define ARM_LIMIT_SW1                       		//outer switch for extended position
-#define LIFT_LIMIT_SW0                       		//upper switch for retracted position
-#define LIFT_LIMIT_SW1                       		//lower switch for extended position
+#define ARM_LIMIT_SW0                       0		//inner switch for retracted position
+#define ARM_LIMIT_SW1                       0		//outer switch for extended position
+#define LIFT_LIMIT_SW0                     0  		//upper switch for retracted position
+#define LIFT_LIMIT_SW1                     0  		//lower switch for extended position
 
 //Program Parameters
 #define WALL_TARGET_DIST                  500
@@ -58,7 +58,7 @@
 
 
 class MSEBot {
-private:
+public:
     bool _hasCube = 0;
     bool _speedMode = 1;
 

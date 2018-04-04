@@ -47,7 +47,7 @@ void MSEBot::init(){
   AccelMag = Adafruit_LSM303_Mag_Unified(12345);
   AccelMag.enableAutoRange(true);
 
-  Serial.println("Initialized in "); Serial.print(initTime-millis()); Serial.println("ms! Starting operation on request!");
+  Serial.print("Initialized in "); Serial.print(initTime-millis()); Serial.println("ms! Starting operation on request!");
 /*
   digitalWrite(13, HIGH);
   digitalWrite(START_SW, HIGH);
