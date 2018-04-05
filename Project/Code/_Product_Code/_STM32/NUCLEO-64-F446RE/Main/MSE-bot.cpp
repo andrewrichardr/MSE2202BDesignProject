@@ -30,6 +30,9 @@ void MSEBot::init(){
   pinMode(LIFT_LIMIT_SW1, INPUT);
   pinMode(START_SW, INPUT);
 
+  pinMode(PB0, OUTPUT);
+  digitalWrite(PB0, LOW);
+
   //Initialize Actuators
   _leftMotor.attach(LEFT_MOTOR);
   _rightMotor.attach(RIGHT_MOTOR);
@@ -40,7 +43,7 @@ void MSEBot::init(){
   _clawMotor.write(CUBE_INTAKE_OPEN); // open position
 
   //Initialize Sensors
-  AccelMag.begin();
+  lsm.begin();
 
   _liftMotor.writeMicroseconds(1600);
   Serial.print("Initialized in "); Serial.print(initTime-millis()); Serial.println("ms! Starting operation on request!");
@@ -48,6 +51,8 @@ void MSEBot::init(){
   //Wait for start button to be pressed
   while(!digitalRead(START_SW)) {}
 
+
+  digitalWrite(PB0, HIGH);
   Serial.println("Starting...");
   
   //Initialize Intake Positions
@@ -249,8 +254,8 @@ bool MSEBot::hasPyramid(){ // Read if we have pyramid using limit switch
 }
 
 void MSEBot::readCompass(){ // Obtain magnetometer readings
-  AccelMag.read();
-  _compassMagnitude = sqrt(pow(AccelMag.magData.x, 2)+pow(AccelMag.magData.x, 2)+pow(AccelMag.magData.x, 2));
+  lsm.read();
+  _compassMagnitude = sqrt(pow(lsm.magData.x, 2)+pow(lsm.magData.x, 2)+pow(lsm.magData.x, 2));
   //_compassHeading = atan2(AccelMag.magnetic.x, AccelMag.magnetic.y)*180/3.14159;
 }
 

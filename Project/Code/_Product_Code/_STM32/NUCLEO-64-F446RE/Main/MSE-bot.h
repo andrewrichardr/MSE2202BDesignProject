@@ -30,9 +30,9 @@
 #define PYR_INTAKE_LIFT                   D13
 #define PYR_INTAKE_WHEELS                 D11
 
-//#define TARGET_PYR_SW                     PB15
+//#define TARGET_PYR_SW                   PB15
 #define START_SW                          PC13
-#define PYR_INTAKE_SW					  PB15
+#define PYR_INTAKE_SW					            PB15
 #define LIFT_LIMIT_SW0                    PB2		//upper switch for retracted position
 #define LIFT_LIMIT_SW1                    PB1		//lower switch for extended position
 
@@ -53,8 +53,8 @@
 #define CUBE_MAG_GEN_THRESH               2000    
 #define CUBE_MAG_ACCURATE_THRESH          4500   
 #define IR_TIME_TOLERANCE 				        2000
-#define CUBE_INTAKE_OPEN                  105      
-#define CUBE_INTAKE_CLOSE                 65       
+#define CUBE_INTAKE_OPEN                  55      
+#define CUBE_INTAKE_CLOSE                 105       
 
 
 class MSEBot {
@@ -87,7 +87,7 @@ public:
     Servo _liftMotor;
     Servo _intakeMotor;
 
-    Adafruit_LSM303 AccelMag;
+    Adafruit_LSM303 lsm;
 
 public:
 	void init();

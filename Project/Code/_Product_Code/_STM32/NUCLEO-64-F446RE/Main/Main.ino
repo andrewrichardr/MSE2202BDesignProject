@@ -3,15 +3,19 @@ MSEBot Robot;
 
 void setup() {
     Robot.init();
-  //  Robot.findWall();
-  //  Robot.moveArmOut();
-  Robot.openClaw();
+    Robot.moveArmOut();
+    Robot.openClaw();
+    Robot.findWall();
+
 }
 
 void loop() {
-if (Robot.checkForCube() == 1) { // Finds cube within gripping distance
-                Robot.closeClaw(); // Pulls cube into robot
-                Robot.moveArmIn();
+Robot.parallelFollow();
+Robot.readCompass();
+Serial.println(Robot._compassMagnitude);
+if(Robot._compassMagnitude> 4500){
+  delay(150);
+  Robot.closeClaw();
 }
   /*
   
