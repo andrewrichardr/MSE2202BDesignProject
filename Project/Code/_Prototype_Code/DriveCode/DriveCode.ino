@@ -6,15 +6,17 @@ Servo rightMotor;
 
 #include <Wire.h>
 
-#define LEFT_MOTOR PA9
-#define RIGHT_MOTOR PC7
+#define LEFT_MOTOR D9 
+#define RIGHT_MOTOR D10
 
-#define LR_ULTRASONIC_IN                  PA8
-#define LR_ULTRASONIC_OUT                 PC9
-#define LF_ULTRASONIC_IN                  PB4
-#define LF_ULTRASONIC_OUT                 PB10
-#define F_ULTRASONIC_IN                   PB3
-#define F_ULTRASONIC_OUT                  PB5
+#define F_ULTRASONIC_IN                   A5
+#define F_ULTRASONIC_OUT                  A4
+#define LF_ULTRASONIC_IN                  A3
+#define LF_ULTRASONIC_OUT                 A2
+#define LR_ULTRASONIC_IN                  A1
+#define LR_ULTRASONIC_OUT                 A0
+
+
 
 #define WALL_LOWER_THRESHOLD 5
 #define WALL_UPPER_THRESHOLD 10
