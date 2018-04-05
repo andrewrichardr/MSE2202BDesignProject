@@ -3,11 +3,19 @@ MSEBot Robot;
 
 void setup() {
     Robot.init();
+  //  Robot.findWall();
+  //  Robot.moveArmOut();
+  Robot.openClaw();
 }
 
 void loop() {
+if (Robot.checkForCube() == 1) { // Finds cube within gripping distance
+                Robot.closeClaw(); // Pulls cube into robot
+                Robot.moveArmIn();
+}
+  /*
   
-    while (true) { //Loop until robot finds the cube
+   while (true) { //Loop until robot finds the cube
         Robot.parallelFollow(); // Follows walls of arena and scans for cube
         if (Robot.checkForCube()) { // Finds cube within large or small distance
             Robot.setSpeed(0);
@@ -26,7 +34,8 @@ void loop() {
             }
         }
     }
-    
+
+    /*
     //Loop until finds the pyramid
     while(!Robot.scanIRWide()) {
         Robot.scanField();
@@ -48,5 +57,6 @@ void loop() {
     }
     
     Robot.placePyramid();
+    */
 }
 

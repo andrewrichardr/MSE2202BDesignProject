@@ -14,8 +14,8 @@
 #include <math.h>
 
 //pin assignments
-#define LEFT_MOTOR                        D9
-#define RIGHT_MOTOR                       D10
+#define LEFT_MOTOR                        D10
+#define RIGHT_MOTOR                       D9
 
 #define LR_ULTRASONIC_IN                  A1
 #define LR_ULTRASONIC_OUT                 A0
@@ -27,11 +27,11 @@
 #define CUBE_INTAKE_ARM                   D12
 #define CUBE_INTAKE_CLAW                  D8
 
-#define PYR_INTAKE_LIFT                   D11
-#define PYR_INTAKE_WHEELS                 D13
+#define PYR_INTAKE_LIFT                   D13
+#define PYR_INTAKE_WHEELS                 D11
 
 //#define TARGET_PYR_SW                     PB15
-#define START_SW                          PB13
+#define START_SW                          PC13
 #define PYR_INTAKE_SW					  PB15
 #define LIFT_LIMIT_SW0                    PB2		//upper switch for retracted position
 #define LIFT_LIMIT_SW1                    PB1		//lower switch for extended position
@@ -39,26 +39,26 @@
 //Program Parameters
 #define WALL_TARGET_DIST                  11 * 58 // 11 cm * 58 = 638
 #define WALL_TARGET_TOLERANCE             58 // 1cm
-#define PARALLEL_TOLERANCE                87 // 1.5cm
-#define TURN_THRESHOLD                    75
-#define SWERVE_DELAY					  2000
-#define PING_MS 						  10
+#define PARALLEL_TOLERANCE                45 // 1.5cm
+#define TURN_THRESHOLD                    650
+#define SWERVE_DELAY					            2000
+#define PING_MS 						              10
 
-#define FORWARD_SPEED_FAST                1850
-#define REVERSE_SPEED_FAST                1150
+#define FORWARD_SPEED_FAST                1750
+#define REVERSE_SPEED_FAST                1250
 #define FORWARD_SPEED_SLOW                1650
 #define REVERSE_SPEED_SLOW                1350
 #define STOP_VALUE                        1500
 
-#define CUBE_MAG_GEN_THRESH               1000    
-#define CUBE_MAG_ACCURATE_THRESH          2500   
-#define IR_TIME_TOLERANCE 				  2000
-#define CUBE_INTAKE_OPEN                  100      
-#define CUBE_INTAKE_CLOSE                 60       
+#define CUBE_MAG_GEN_THRESH               2000    
+#define CUBE_MAG_ACCURATE_THRESH          4500   
+#define IR_TIME_TOLERANCE 				        2000
+#define CUBE_INTAKE_OPEN                  105      
+#define CUBE_INTAKE_CLOSE                 65       
 
 
 class MSEBot {
-private:
+public:
     bool _speedMode = 1;
 
     unsigned int _LR_ultrasonic_dist;
@@ -87,12 +87,14 @@ private:
     Servo _liftMotor;
     Servo _intakeMotor;
 
-    Adafruit_LSM303_Mag_Unified AccelMag;
+    Adafruit_LSM303 AccelMag;
 
 public:
 	void init();
 
+    void findWall();
     void PingUltra();
+    void PingFront();
     void TurnOnAxisL();
     void TurnOnAxisR();
     void goForward();
@@ -113,7 +115,8 @@ public:
     void setSpeed(bool speed);
     void closeClaw();
     void openClaw();
-	void moveArm(bool position);
+	void moveArmIn();
+ void moveArmOut();
 	void moveLift(bool position);
 
 
