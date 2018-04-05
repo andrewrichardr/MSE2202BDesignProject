@@ -3,41 +3,35 @@ MSEBot Robot;
 
 void setup() {
     Robot.init();
-    Robot.moveArmOut();
+    //Robot.moveArmOut();
     Robot.openClaw();
     Robot.findWall();
 
 }
 
 void loop() {
-Robot.parallelFollow();
-Robot.readCompass();
-Serial.println(Robot._compassMagnitude);
-if(Robot._compassMagnitude> 4500){
-  delay(150);
-  Robot.closeClaw();
-}
-  /*
-  
-   while (true) { //Loop until robot finds the cube
-        Robot.parallelFollow(); // Follows walls of arena and scans for cube
-        if (Robot.checkForCube()) { // Finds cube within large or small distance
-            Robot.setSpeed(0);
-            if (Robot.checkForCube() == 1) { // Finds cube within gripping distance
-                Robot.closeClaw(); // Pulls cube into robot
-                Robot.moveArm(0);
-                if (Robot.checkForCube() != 1) { // If we failed to pick up the cube try again
-                    Robot.openClaw();
-                    Robot.moveArm(1);
-                    continue;
-                }
-                Robot.setSpeed(1); // setup for finding pyramid
-                Robot.TurnOnAxisL();
-                delay(5000); // Turn 160 degrees
-                break; 
-            }
-        }
+  while(1){
+    
+    Robot.parallelFollow();
+
+    Robot.readCompass();
+
+    if(Robot._compassMagnitude> 2000){
+      Robot.setSpeed(0);
+      if(Robot._compassMagnitude> 4500){
+        delay(105);
+        Robot.closeClaw();
+        Robot.setSpeed(1);
+        break;
+      }
     }
+/*
+  while(1){
+    Robot.TurnOnAxisL();
+    delay(300);
+    Robot.goForward();
+  }
+  
 
     /*
     //Loop until finds the pyramid
@@ -62,5 +56,6 @@ if(Robot._compassMagnitude> 4500){
     
     Robot.placePyramid();
     */
+}
 }
 

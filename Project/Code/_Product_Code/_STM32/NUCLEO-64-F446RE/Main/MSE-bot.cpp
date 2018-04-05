@@ -99,7 +99,7 @@ void MSEBot::PingFront(){
   if(_Fecho) _F_ultrasonic_dist = _Fecho;
 }
 
-void MSEBot::TurnOnAxisL(){ // Set speeds for turning left
+void MSEBot::TurnOnAxisL(){ // Set speeds for turning lef
   if(_speedMode){
     _leftMotor.writeMicroseconds(FORWARD_SPEED_FAST);
     _rightMotor.writeMicroseconds(REVERSE_SPEED_FAST);
@@ -292,7 +292,7 @@ void MSEBot::findWall(){
 void MSEBot::parallelFollow(){ // Follow walls at a set distace, parallel to wall, turn as necessary
   PingUltra();
   unsigned int parallel = abs(_LF_ultrasonic_dist - _LR_ultrasonic_dist);
-  unsigned int distance = abs(_LF_ultrasonic_dist - WALL_TARGET_DIST);
+  //unsigned int distance = abs(_LF_ultrasonic_dist - WALL_TARGET_DIST);
 /*
   if(parallel < PARALLEL_TOLERANCE && distance < WALL_TARGET_TOLERANCE){ //Everything is fine and dandy
     goForward();
@@ -318,8 +318,6 @@ void MSEBot::parallelFollow(){ // Follow walls at a set distace, parallel to wal
     moveOut();
   }
 
-
-  
     if(_F_ultrasonic_dist < TURN_THRESHOLD){
     TurnOnAxisL();
     PingFront();
