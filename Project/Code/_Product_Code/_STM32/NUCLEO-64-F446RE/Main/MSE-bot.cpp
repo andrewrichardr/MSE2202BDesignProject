@@ -26,6 +26,7 @@ void MSEBot::init(){
   pinMode(PYR_INTAKE_LIFT, OUTPUT);
   pinMode(PYR_INTAKE_WHEELS, OUTPUT);
   pinMode(PYR_INTAKE_SW, INPUT);
+  digitalWrite(PYR_INTAKE_SW, HIGH);
   pinMode(LIFT_LIMIT_SW0, INPUT);
   pinMode(LIFT_LIMIT_SW1, INPUT);
   pinMode(START_SW, INPUT);
@@ -185,18 +186,18 @@ void MSEBot::moveArmIn() {
 void MSEBot::moveLift(bool position) {
   if(position) { // if we want lift down
     if(!_LiftPosition) { // if lift up
-      while(!digitalRead(LIFT_LIMIT_SW1)) {
-        _liftMotor.writeMicroseconds(FORWARD_SPEED_SLOW); // move down until hits outer switch
-      }
+      //while(!digitalRead(LIFT_LIMIT_SW1)) {
+        _liftMotor.writeMicroseconds(REVERSE_SPEED_SLOW); // move down until hits outer switch
+        delay(2000);
       _liftMotor.writeMicroseconds(STOP_VALUE);
       _LiftPosition = 1;
     }
   }
   else { // if we want lift retracted or up
     if(_LiftPosition) {
-      while(!digitalRead(LIFT_LIMIT_SW0)) {
-        _liftMotor.writeMicroseconds(REVERSE_SPEED_SLOW); // move up until hits inner switch
-      }
+      //while(!digitalRead(LIFT_LIMIT_SW0)) {
+        _liftMotor.writeMicroseconds(FORWARD_SPEED_SLOW); // move up until hits inner switch
+      delay(2000);
       _liftMotor.writeMicroseconds(STOP_VALUE);
       _LiftPosition = 0;
     }
@@ -282,7 +283,6 @@ void MSEBot::parallelFollow(){ // Follow walls at a set distace, parallel to wal
   
   if(_F_ultrasonic_dist < TURN_THRESHOLD) {
     StopDrive();
-    delay(100);
     /*
     while(_LR_ultrasonic_dist > WALL_TARGET_DIST){ //Turn until Front Ultrasonic is measureing a large distance
     TurnOnAxisL();
@@ -317,48 +317,102 @@ void MSEBot::parallelFollow(){ // Follow walls at a set distace, parallel to wal
   }
 }
 
-void MSEBot::scanField() { // Swerve and scan field for pyramid as robot drives across it back and forth
-  if(_F_ultrasonic_dist < 2 * TURN_THRESHOLD) { // turn at walls
+void MSEBot::scanField() { // Swerve and scan field for pyramid as robot drives across it back andforth
+TurnOnAxisL();
+delay(300);
+goForward();
+delay(300);
+
+
+/*
+       if(scanIRWide()) {
+          StopDrive();
+          return;
+        }
+        PingUltra();
+  if(_F_ultrasonic_dist < 3 * TURN_THRESHOLD) { // turn at walls
     if(_TurnCount) {
       TurnOnAxisR();
-      delay(5000); // turn 160 degrees
+      unsigned long triggerTime= millis(); // turn 160 degrees
+      while(millis() - triggerTime < 3000) {
+        if(scanIRWide()) {
+          StopDrive();
+          return;
+        }
+        if(scanIRWide()) {
+          StopDrive();
+          return;
+        }
+        if(scanIRWide()) {
+          StopDrive();
+          return;
+        }
+      }
       _TurnCount = 0;
     }
     else {
       TurnOnAxisL();
-      delay(5000); // turn 160 degrees
-      _TurnCount = 1;
+      unsigned long triggerTime= millis(); // turn 160 degrees
+      while(millis() - triggerTime < 3000) {
+        if(scanIRWide()) {
+         StopDrive();
+          return;
+        }
+        if(scanIRWide()) {
+          StopDrive();
+          return;
+        }
+        if(scanIRWide()) {
+          StopDrive();
+          return;
+        }
+      }
+      _TurnCount = 0;
     }
   }
+
+  if(scanIRWide()) {
+          StopDrive();
+          return;
+        }
   
   if((int)(millis() / SWERVE_DELAY) % 2) { // alternate between swerving left and right in real time
     _leftMotor.writeMicroseconds(FORWARD_SPEED_FAST);
-    _rightMotor.writeMicroseconds(FORWARD_SPEED_SLOW);
-  }
-  else {
-    _leftMotor.writeMicroseconds(FORWARD_SPEED_SLOW);
     _rightMotor.writeMicroseconds(FORWARD_SPEED_FAST);
   }
+  else {
+    _leftMotor.writeMicroseconds(FORWARD_SPEED_FAST);
+    _rightMotor.writeMicroseconds(FORWARD_SPEED_FAST);
+  }
+
+  if(scanIRWide()) {
+          StopDrive();
+          return;
+        }
+        */
 } 
 
 void MSEBot::intakeOn() { // get intake in position for retrieving pyramid
-  _intakeMotor.writeMicroseconds(FORWARD_SPEED_FAST);
+  _intakeMotor.writeMicroseconds(REVERSE_SPEED_FAST);
   moveLift(1);
 }
 
 void MSEBot::placePyramid() { // routine for putting cube in pyramid
   _intakeMotor.writeMicroseconds(STOP_VALUE);
-  delay(100);
+  delay(1000);
   moveLift(0);
   openClaw(); // drop cube into funnel
-  delay(100);
+  delay(1000);
   goReverse(); // back up a bit
   delay(2000); // test this value so cube under pyr
   StopDrive();
-  delay(100);
+  delay(1000);
   moveLift(1);
-  _intakeMotor.writeMicroseconds(REVERSE_SPEED_FAST); // push pyramid back out with cube underneath
-  
+  delay(1000);
+  goReverse();
+  _intakeMotor.writeMicroseconds(FORWARD_SPEED_FAST); // push pyramid back out with cube underneath
+  delay(2000);
+  StopDrive();  
 } 
 
 void MSEBot::setSpeed(bool speed){
