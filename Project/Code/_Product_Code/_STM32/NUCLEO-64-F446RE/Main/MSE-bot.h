@@ -14,52 +14,51 @@
 #include <math.h>
 
 //pin assignments
-#define LEFT_MOTOR                        PA9
-#define RIGHT_MOTOR                       PC7
+#define LEFT_MOTOR                        D10
+#define RIGHT_MOTOR                       D9
 
-#define LR_ULTRASONIC_IN                  PA8
-#define LR_ULTRASONIC_OUT                 PC9
-#define LF_ULTRASONIC_IN                  PB4
-#define LF_ULTRASONIC_OUT                 PB10
-#define F_ULTRASONIC_IN                   PB3
-#define F_ULTRASONIC_OUT                  PB5
+#define LR_ULTRASONIC_IN                  A1
+#define LR_ULTRASONIC_OUT                 A0
+#define LF_ULTRASONIC_IN                  A3
+#define LF_ULTRASONIC_OUT                 A2
+#define F_ULTRASONIC_IN                   A5
+#define F_ULTRASONIC_OUT                  A4
 
-#define CUBE_INTAKE_ARM                   PA5
-#define CUBE_INTAKE_CLAW                  PA6
+#define CUBE_INTAKE_ARM                   D12
+#define CUBE_INTAKE_CLAW                  D8
 
-#define PYR_INTAKE_LIFT                   PA7
-#define PYR_INTAKE_WHEELS                 PB6
+#define PYR_INTAKE_LIFT                   D13
+#define PYR_INTAKE_WHEELS                 D3
 
-#define TARGET_PYR_SW                     PB15
-#define START_SW                          PB13
-#define RF_LIMIT_SW                       PB14
-#define RR_LIMIT_SW                       PB2
-#define ARM_LIMIT_SW0                       		//inner switch for retracted position
-#define ARM_LIMIT_SW1                       		//outer switch for extended position
-#define LIFT_LIMIT_SW0                       		//upper switch for retracted position
-#define LIFT_LIMIT_SW1                       		//lower switch for extended position
+//#define TARGET_PYR_SW                     PB15
+#define START_SW                          PC13
+#define PYR_INTAKE_SW            PG0
+#define LIFT_LIMIT_SW0                    PB2   //upper switch for retracted position
+#define LIFT_LIMIT_SW1                    PB1   //lower switch for extended position
 
 //Program Parameters
-#define WALL_TARGET_DIST                  500
-#define WALL_TARGET_TOLERANCE             100
-#define PARALLEL_TOLERANCE                100
-#define TURN_THRESHOLD                    75
+#define WALL_TARGET_DIST                  13 * 58 // 11 cm * 58 = 638
+#define WALL_TARGET_TOLERANCE             30 // 1cm
+#define PARALLEL_TOLERANCE                60 // 1.5cm
+#define TURN_THRESHOLD                    600
+#define SWERVE_DELAY                      2000
+#define PING_MS                           10
 
-#define FORWARD_SPEED_FAST                1850
-#define REVERSE_SPEED_FAST                1150
+#define FORWARD_SPEED_FAST                1800
+#define REVERSE_SPEED_FAST                1200
 #define FORWARD_SPEED_SLOW                1650
 #define REVERSE_SPEED_SLOW                1350
 #define STOP_VALUE                        1500
 
-#define CUBE_MAG_GEN_THRESH               1000    //Arbitrary Number for now, Value that the magnetomoter will send then the robot is in the general vicinity of the cube
-#define CUBE_MAG_ACCURATE_THRESH          2500    //Arbitrary Number for now, Value that the magnetomoter will send then the cube is in the claw
-#define CUBE_INTAKE_OPEN                  90      //Arbitrary Number for now
-#define CUBE_INTAKE_CLOSE                 0       //Arbitrary Number for now
+#define CUBE_MAG_GEN_THRESH               2000
+#define CUBE_MAG_ACCURATE_THRESH          4500
+#define IR_TIME_TOLERANCE                 2000
+#define CUBE_INTAKE_OPEN                  65
+#define CUBE_INTAKE_CLOSE                 105
 
 
 class MSEBot {
-private:
-    bool _hasCube = 0;
+  public:
     bool _speedMode = 1;
 
     unsigned int _LR_ultrasonic_dist;
@@ -68,11 +67,13 @@ private:
     unsigned int _LRecho;
     unsigned int _LFecho;
     unsigned int _Fecho;
+    unsigned int _LastIRTime = 0;
 
     char _IRValues[4] = {'A', 'E', 'I', 'O'};
-    bool _IRsw = 1;
-	bool _ArmPosition = 0;
-	bool _LiftPosition = 1;
+    bool _IRsw = 1; // 1 for AE, 0 for IO
+    bool _ArmPosition = 0;
+    bool _LiftPosition = 1;
+    bool _TurnCount = 0; // counter for turn direction for finding pyramid
 
     int _compassHeading;
     int _compassMagnitude;
@@ -86,13 +87,14 @@ private:
     Servo _liftMotor;
     Servo _intakeMotor;
 
-    Adafruit_LSM303_Mag_Unified AccelMag;
+    Adafruit_LSM303 AccelMag;
 
-public:
-	void init();
+  public:
+    void init();
 
+    void findWall();
     void PingUltra();
-    //void readUltra();
+    void PingFront();
     void TurnOnAxisL();
     void TurnOnAxisR();
     void goForward();
@@ -102,16 +104,22 @@ public:
     void StopDrive();
     bool scanIRFocused();
     bool scanIRWide();
+    bool hasPyramid();
     void readCompass();
     short checkForCube();
+    void checkForPyramid();
     void parallelFollow();
+    void scanField();
+    void intakeOn();
     void placePyramid();
     void setSpeed(bool speed);
     void closeClaw();
     void openClaw();
-	void moveArm(bool position);
-	void moveLift(bool position);
+    void moveArmIn();
+    void moveArmOut();
+    void moveLift(bool position);
 
 
 
 };
+

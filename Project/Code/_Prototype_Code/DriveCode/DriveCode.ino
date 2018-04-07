@@ -6,23 +6,25 @@ Servo rightMotor;
 
 #include <Wire.h>
 
-#define LEFT_MOTOR PA9
-#define RIGHT_MOTOR PC7
+#define LEFT_MOTOR D9 
+#define RIGHT_MOTOR D10
 
-#define LR_ULTRASONIC_IN                  PA8
-#define LR_ULTRASONIC_OUT                 PC9
-#define LF_ULTRASONIC_IN                  PB4
-#define LF_ULTRASONIC_OUT                 PB10
-#define F_ULTRASONIC_IN                   PB3
-#define F_ULTRASONIC_OUT                  PB5
+#define F_ULTRASONIC_IN                   A5
+#define F_ULTRASONIC_OUT                  A4
+#define LF_ULTRASONIC_IN                  A3
+#define LF_ULTRASONIC_OUT                 A2
+#define LR_ULTRASONIC_IN                  A1
+#define LR_ULTRASONIC_OUT                 A0
+
+
 
 #define WALL_LOWER_THRESHOLD 5
 #define WALL_UPPER_THRESHOLD 10
 
 #define TURN_THRESHOLD 10
 
-#define FORWARD_SPEED 1850
-#define REVERSE_SPEED 1850
+#define FORWARD_SPEED 1990
+#define REVERSE_SPEED 1990
 
 #define LIMIT_SW PA3
 
@@ -46,7 +48,7 @@ void lmswitch(){
 
 void setup() {
   // put your setup code here, to run once:
-  Serial.begin(115200);
+  Serial.begin(9600);
 
   pinMode(LR_ULTRASONIC_IN, OUTPUT);
   pinMode(LF_ULTRASONIC_IN, OUTPUT);
@@ -90,11 +92,11 @@ void loop() {
     Serial.print("Move Out  ");
   }
 
-  while(F_ultrasonic_dist < 1000){
-    TurnOnAxis();
-    Serial.println("Turning");
-    pingF();
-  }
+  //while(F_ultrasonic_dist < 1000){
+  //  TurnOnAxis();
+  //  Serial.println("Turning");
+  //  pingF();
+  //}
 
   Serial.print(LF_ultrasonic_dist);
   Serial.print(" ");

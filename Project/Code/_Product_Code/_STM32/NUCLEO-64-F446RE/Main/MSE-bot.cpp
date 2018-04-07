@@ -5,15 +5,14 @@ void MSEBot::init(){
   int initTime = millis();
 
   //Initialize Buses
-  Serial.begin(115200);
-  //Serial1.begin(115200);  //UART1 for external Ultrasonic Controller
-  Serial3.begin(2400);    //UART3 for IR sensor
-  Serial4.begin(2400);    //UART4 for IR sensor
+  Serial.begin(9600);
+  Serial7.begin(2400);    //UART7 for pyramid IR sensor
+  Serial8.begin(2400);    //UART8 for front IR sensor
   Wire.begin();           //I2C1 for Compass and Accel
   Wire.setClock(400000);
 
   //Initialize GPIO Pins
-  pinMode(13, OUTPUT);
+  //pinMode(13, OUTPUT);
   pinMode(LR_ULTRASONIC_IN, OUTPUT);
   pinMode(LF_ULTRASONIC_IN, OUTPUT);
   pinMode(F_ULTRASONIC_IN, OUTPUT);
@@ -26,8 +25,8 @@ void MSEBot::init(){
   pinMode(CUBE_INTAKE_CLAW, OUTPUT);
   pinMode(PYR_INTAKE_LIFT, OUTPUT);
   pinMode(PYR_INTAKE_WHEELS, OUTPUT);
-  pinMode(ARM_LIMIT_SW0, INPUT);
-  pinMode(ARM_LIMIT_SW1, INPUT);
+  pinMode(PYR_INTAKE_SW, INPUT);
+  digitalWrite(PYR_INTAKE_SW, HIGH);
   pinMode(LIFT_LIMIT_SW0, INPUT);
   pinMode(LIFT_LIMIT_SW1, INPUT);
   pinMode(START_SW, INPUT);
@@ -39,25 +38,33 @@ void MSEBot::init(){
   _clawMotor.attach(CUBE_INTAKE_CLAW);
   _liftMotor.attach(PYR_INTAKE_LIFT);
   _intakeMotor.attach(PYR_INTAKE_WHEELS);
-  moveLift(0); // up position
-  moveArm(1); // out position
   _clawMotor.write(CUBE_INTAKE_OPEN); // open position
 
   //Initialize Sensors
-  AccelMag = Adafruit_LSM303_Mag_Unified(12345);
-  AccelMag.enableAutoRange(true);
+  AccelMag.begin();
 
-  Serial.println("Initialized in "); Serial.print(initTime-millis()); Serial.println("ms! Starting operation on request!");
-/*
+  _liftMotor.writeMicroseconds(1600);
+  Serial.print("Initialized in "); Serial.print(initTime-millis()); Serial.println("ms! Starting operation on request!");
+  
+  //Wait for start button to be pressed
+  while(!digitalRead(START_SW)) {}
+
+  Serial.println("Starting...");
+  
+  //Initialize Intake Positions
+  //moveLift(0); // up position
+
+
+  
+  /*
   digitalWrite(13, HIGH);
   digitalWrite(START_SW, HIGH);
-  while(1) {
-    if(digitalRead(START_SW)) break;   //Initializes then waits for the signal to start going, possibly do this over WiFi in a future version
-  }
   */
+
+
 }
-#define PING_MS 10
-void MSEBot::PingUltra(){
+
+void MSEBot::PingUltra(){ // Ping ultrasonic sensors and record values in member variables
   digitalWrite(F_ULTRASONIC_IN, HIGH);
   delayMicroseconds(PING_MS); 
   digitalWrite(F_ULTRASONIC_IN, LOW);
@@ -79,7 +86,15 @@ void MSEBot::PingUltra(){
   //Serial.print(" F: "); Serial.print(_F_ultrasonic_dist); Serial.print(" LF: "); Serial.print(_LF_ultrasonic_dist); Serial.print(" LR: "); Serial.println(_LR_ultrasonic_dist);
 }
 
-void MSEBot::TurnOnAxisL(){
+void MSEBot::PingFront(){
+    digitalWrite(F_ULTRASONIC_IN, HIGH);
+  delayMicroseconds(PING_MS); 
+  digitalWrite(F_ULTRASONIC_IN, LOW);
+  _Fecho = pulseIn(F_ULTRASONIC_OUT, HIGH, 10000);
+  if(_Fecho) _F_ultrasonic_dist = _Fecho;
+}
+
+void MSEBot::TurnOnAxisL(){ // Set speeds for turning left
   if(_speedMode){
     _leftMotor.writeMicroseconds(FORWARD_SPEED_FAST);
     _rightMotor.writeMicroseconds(REVERSE_SPEED_FAST);
@@ -90,7 +105,7 @@ void MSEBot::TurnOnAxisL(){
   }
 }
 
-void MSEBot::TurnOnAxisR(){
+void MSEBot::TurnOnAxisR(){ // Set speeds for turning right
   if(_speedMode){
     _leftMotor.writeMicroseconds(REVERSE_SPEED_FAST);
     _rightMotor.writeMicroseconds(FORWARD_SPEED_FAST);
@@ -101,12 +116,12 @@ void MSEBot::TurnOnAxisR(){
   }
 }
 
-void MSEBot::StopDrive(){
+void MSEBot::StopDrive(){ // Set speeds to stop
   _leftMotor.writeMicroseconds(STOP_VALUE);
   _rightMotor.writeMicroseconds(STOP_VALUE);
 }
 
-void MSEBot::goForward(){
+void MSEBot::goForward(){ // Set speeds to go forward
   if(_speedMode){
     _leftMotor.writeMicroseconds(FORWARD_SPEED_FAST);
     _rightMotor.writeMicroseconds(FORWARD_SPEED_FAST);
@@ -115,10 +130,10 @@ void MSEBot::goForward(){
     _leftMotor.writeMicroseconds(FORWARD_SPEED_SLOW);
     _rightMotor.writeMicroseconds(FORWARD_SPEED_SLOW);
   }
-  Serial.println("Forward");
+  //Serial.println("Forward");
 }
 
-void MSEBot::goReverse(){
+void MSEBot::goReverse(){ // Set values to go in reverse
   if(_speedMode){
     _leftMotor.writeMicroseconds(REVERSE_SPEED_FAST);
     _rightMotor.writeMicroseconds(REVERSE_SPEED_FAST);
@@ -127,10 +142,10 @@ void MSEBot::goReverse(){
     _leftMotor.writeMicroseconds(REVERSE_SPEED_SLOW);
     _rightMotor.writeMicroseconds(REVERSE_SPEED_SLOW);
   }
-    Serial.println("Reverse");
+    //Serial.println("Reverse");
 }
 
-void MSEBot::moveIn(){
+void MSEBot::moveIn(){ // Move in towards right side
   if(_speedMode){
     _leftMotor.writeMicroseconds(STOP_VALUE);
     _rightMotor.writeMicroseconds(FORWARD_SPEED_FAST);
@@ -139,10 +154,10 @@ void MSEBot::moveIn(){
     _leftMotor.writeMicroseconds(STOP_VALUE);
     _rightMotor.writeMicroseconds(FORWARD_SPEED_SLOW);
   }
-    Serial.println("in");
+    //Serial.println("in");
 }
 
-void MSEBot::moveOut(){
+void MSEBot::moveOut(){ // Move out away from right side
   if(_speedMode){
     _leftMotor.writeMicroseconds(FORWARD_SPEED_FAST);
     _rightMotor.writeMicroseconds(STOP_VALUE);
@@ -151,53 +166,46 @@ void MSEBot::moveOut(){
     _leftMotor.writeMicroseconds(FORWARD_SPEED_SLOW);
     _rightMotor.writeMicroseconds(STOP_VALUE);
   }
-    Serial.println("out");
+    //Serial.println("out");
 }
 
-void MSEBot::moveArm(bool position) {
-  if(position) { // if we want arm to extend
-    if(!_ArmPosition) { // if arm isnt already extended
-      while(!digitalRead(ARM_LIMIT_SW1)) {
-        _armMotor.writeMicroseconds(FORWARD_SPEED_SLOW); // move out until hits outer switch
-      }
-      _armMotor.writeMicroseconds(STOP_VALUE);
-      _ArmPosition = 1;
-    }
-  }
-  else { // if we want arm retracted
-    if(_ArmPosition) {
-      while(!digitalRead(ARM_LIMIT_SW0)) {
-        _armMotor.writeMicroseconds(REVERSE_SPEED_SLOW); // move in until hits inner switch
-      }
-      _armMotor.writeMicroseconds(STOP_VALUE);
-      _ArmPosition = 0;
-    }
-  }
+void MSEBot::moveArmOut() {
+  Serial.println("Moving Arm");
+  _armMotor.writeMicroseconds(1100);
+  delay(5000);
+  _armMotor.writeMicroseconds(STOP_VALUE);
+} 
+
+void MSEBot::moveArmIn() {
+  Serial.println("Moving Arm");
+  _armMotor.writeMicroseconds(1800);
+  delay(5000);
+  _armMotor.writeMicroseconds(STOP_VALUE);
 } 
 
 void MSEBot::moveLift(bool position) {
   if(position) { // if we want lift down
     if(!_LiftPosition) { // if lift up
-      while(!digitalRead(LIFT_LIMIT_SW1)) {
-        _liftMotor.writeMicroseconds(FORWARD_SPEED_SLOW); // move down until hits outer switch
-      }
+      //while(!digitalRead(LIFT_LIMIT_SW1)) {
+        _liftMotor.writeMicroseconds(REVERSE_SPEED_SLOW); // move down until hits outer switch
+        delay(2000);
       _liftMotor.writeMicroseconds(STOP_VALUE);
       _LiftPosition = 1;
     }
   }
   else { // if we want lift retracted or up
     if(_LiftPosition) {
-      while(!digitalRead(LIFT_LIMIT_SW0)) {
-        _liftMotor.writeMicroseconds(REVERSE_SPEED_SLOW); // move up until hits inner switch
-      }
+      //while(!digitalRead(LIFT_LIMIT_SW0)) {
+        _liftMotor.writeMicroseconds(FORWARD_SPEED_SLOW); // move up until hits inner switch
+      delay(2000);
       _liftMotor.writeMicroseconds(STOP_VALUE);
       _LiftPosition = 0;
     }
   }
 }
 
-bool MSEBot::scanIRFocused(){
-  char value = Serial3.read();
+bool MSEBot::scanIRFocused(){ // Scan using rear shrouded IR
+  char value = Serial7.read();
   int idx1, idx2;
   if(_IRsw){
     idx1 = 0;
@@ -208,6 +216,7 @@ bool MSEBot::scanIRFocused(){
     idx2 = 3;
   }
   if(value == _IRValues[idx1] || value == _IRValues[idx2]){
+  _LastIRTime = millis();
     return 1;
   } 
   else{
@@ -215,8 +224,8 @@ bool MSEBot::scanIRFocused(){
   }
 }
 
-bool MSEBot::scanIRWide(){
-  char value = Serial4.read();
+bool MSEBot::scanIRWide(){ // Scan using front unshrouded IR
+  char value = Serial8.read();
   int idx1, idx2;
   if(_IRsw){
     idx1 = 0;
@@ -227,6 +236,7 @@ bool MSEBot::scanIRWide(){
     idx2 = 3;
   }
   if(value == _IRValues[idx1] || value == _IRValues[idx2]){
+  _LastIRTime = millis();
     return 1;
   } 
   else{
@@ -234,61 +244,175 @@ bool MSEBot::scanIRWide(){
   }
 }
 
-void MSEBot::readCompass(){
-  AccelMag.getEvent(&compassData);
-  _compassMagnitude = sqrt(pow(AccelMag.raw.x, 2)+pow(AccelMag.raw.y, 2)+pow(AccelMag.raw.z, 2));
+bool MSEBot::hasPyramid(){ // Read if we have pyramid using limit switch
+  return digitalRead(PYR_INTAKE_SW);
+}
+
+void MSEBot::readCompass(){ // Obtain magnetometer readings
+  AccelMag.read();
+  _compassMagnitude = sqrt(pow(AccelMag.magData.x, 2)+pow(AccelMag.magData.x, 2)+pow(AccelMag.magData.x, 2));
   //_compassHeading = atan2(AccelMag.magnetic.x, AccelMag.magnetic.y)*180/3.14159;
-
-  Serial.print(" MAG: "); Serial.println(_compassMagnitude);
 }
 
-short MSEBot::checkForCube(){
+short MSEBot::checkForCube(){ // Compare magnetometer readings to see how close cube is
   readCompass();
   if(_compassMagnitude > CUBE_MAG_ACCURATE_THRESH) return 1;  //return 1 if the mag field exceeds the threshold of the cube being held in the claw
   if(_compassMagnitude > CUBE_MAG_GEN_THRESH) return 2;       //return 2 if the mag field exceeds the threshold of the cube being in the vicinity of the claw
   else return 0;                                              //return 0 if the cube is not near by
 }
 
-void MSEBot::parallelFollow(){
-  PingUltra();
-  unsigned int parallel = abs(_LF_ultrasonic_dist - _LR_ultrasonic_dist);
-  unsigned int distance = abs(_LF_ultrasonic_dist - WALL_TARGET_DIST);
-
-  if(parallel < PARALLEL_TOLERANCE && distance < WALL_TARGET_TOLERANCE){ //Everything is fine and dandy
-    goForward();
-  }
-  else if(_LF_ultrasonic_dist > _LR_ultrasonic_dist && distance < WALL_TARGET_TOLERANCE){ //Distance is ok, Robot is not parallel
-    moveIn();
-  }
-  else if(_LF_ultrasonic_dist < _LR_ultrasonic_dist && distance < WALL_TARGET_TOLERANCE){ //Distance is ok, Robot is not parallel
-    moveOut();
-  }
-  else if(_LF_ultrasonic_dist < WALL_TARGET_DIST ){ //Distance is too close
-    moveOut();
-  }
-  else{ //Distance is too far
-    moveIn();
-  }
-    
-  while(_F_ultrasonic_dist < 2*TURN_THRESHOLD){ //Turn until Front Ultrasonic is measureing a large distance
+void MSEBot::checkForPyramid(){ // Checks previous instance of IR reading to see if robot is still pointing towards pyr
+  while(_LastIRTime - millis() > IR_TIME_TOLERANCE) {
+    scanIRFocused();
     TurnOnAxisL();
-    PingUltra();
   }
 }
 
-void MSEBot::placePyramid() {/*
-  _liftMotor.write(PYR_INTAKE_UP);
-  _armMotor.write(0); // some value close to ground
-  _clawMotor.write(CUBE_INTAKE_OPEN);
-  delay(100);
-  _leftMotor.writeMicroseconds(FORWARD_SPEED);
-  _rightMotor.writeMicroseconds(FORWARD_SPEED);
-  delay(300); // test this value
-  TurnOnAxisL(); // test this value
-  delay(100);
-  _liftMotor.write(PYR_INTAKE_DOWN);
-  _intakeMotor.writeMicroseconds(1250); // push pyramid back out
-  */
+void MSEBot::findWall(){
+  PingUltra();
+  goForward();
+  while(_F_ultrasonic_dist > TURN_THRESHOLD) {
+    PingUltra();
+  }
+  StopDrive();
+  
+}
+
+void MSEBot::parallelFollow(){ // Follow walls at a set distace, parallel to wall, turn as necessary
+  PingUltra();
+  
+  if(_F_ultrasonic_dist < TURN_THRESHOLD) {
+    StopDrive();
+    /*
+    while(_LR_ultrasonic_dist > WALL_TARGET_DIST){ //Turn until Front Ultrasonic is measureing a large distance
+    TurnOnAxisL();
+    PingUltra();
+    }
+    */
+    TurnOnAxisL();
+    delay(100);
+  }
+  
+  unsigned int parallel = abs(_LF_ultrasonic_dist - _LR_ultrasonic_dist);
+ /* unsigned int distance = abs(_LF_ultrasonic_dist - WALL_TARGET_DIST);
+  
+  if(parallel < PARALLEL_TOLERANCE && distance < WALL_TARGET_TOLERANCE){ //Everything is fine and dandy
+    goForward();
+  }
+  else if(_LF_ultrasonic_dist > PARALLEL_TOLERANCE + _LR_ultrasonic_dist){ //Distance is ok, Robot is not parallel
+    moveIn();
+  }
+  else if(_LF_ultrasonic_dist + PARALLEL_TOLERANCE < _LR_ultrasonic_dist){ //Distance is ok, Robot is not parallel
+    moveOut();
+  }
+*/
+    if(parallel < PARALLEL_TOLERANCE){
+    goForward();
+  }
+  else if(_LF_ultrasonic_dist > _LR_ultrasonic_dist){
+    moveIn();
+  }
+  else{
+    moveOut();
+  }
+}
+
+void MSEBot::scanField() { // Swerve and scan field for pyramid as robot drives across it back andforth
+TurnOnAxisL();
+delay(300);
+goForward();
+delay(300);
+
+
+/*
+       if(scanIRWide()) {
+          StopDrive();
+          return;
+        }
+        PingUltra();
+  if(_F_ultrasonic_dist < 3 * TURN_THRESHOLD) { // turn at walls
+    if(_TurnCount) {
+      TurnOnAxisR();
+      unsigned long triggerTime= millis(); // turn 160 degrees
+      while(millis() - triggerTime < 3000) {
+        if(scanIRWide()) {
+          StopDrive();
+          return;
+        }
+        if(scanIRWide()) {
+          StopDrive();
+          return;
+        }
+        if(scanIRWide()) {
+          StopDrive();
+          return;
+        }
+      }
+      _TurnCount = 0;
+    }
+    else {
+      TurnOnAxisL();
+      unsigned long triggerTime= millis(); // turn 160 degrees
+      while(millis() - triggerTime < 3000) {
+        if(scanIRWide()) {
+         StopDrive();
+          return;
+        }
+        if(scanIRWide()) {
+          StopDrive();
+          return;
+        }
+        if(scanIRWide()) {
+          StopDrive();
+          return;
+        }
+      }
+      _TurnCount = 0;
+    }
+  }
+
+  if(scanIRWide()) {
+          StopDrive();
+          return;
+        }
+  
+  if((int)(millis() / SWERVE_DELAY) % 2) { // alternate between swerving left and right in real time
+    _leftMotor.writeMicroseconds(FORWARD_SPEED_FAST);
+    _rightMotor.writeMicroseconds(FORWARD_SPEED_FAST);
+  }
+  else {
+    _leftMotor.writeMicroseconds(FORWARD_SPEED_FAST);
+    _rightMotor.writeMicroseconds(FORWARD_SPEED_FAST);
+  }
+
+  if(scanIRWide()) {
+          StopDrive();
+          return;
+        }
+        */
+} 
+
+void MSEBot::intakeOn() { // get intake in position for retrieving pyramid
+  _intakeMotor.writeMicroseconds(REVERSE_SPEED_FAST);
+  moveLift(1);
+}
+
+void MSEBot::placePyramid() { // routine for putting cube in pyramid
+  _intakeMotor.writeMicroseconds(STOP_VALUE);
+  delay(1000);
+  moveLift(0);
+  openClaw(); // drop cube into funnel
+  delay(1000);
+  goReverse(); // back up a bit
+  delay(2000); // test this value so cube under pyr
+  StopDrive();
+  delay(1000);
+  moveLift(1);
+  delay(1000);
+  goReverse();
+  _intakeMotor.writeMicroseconds(FORWARD_SPEED_FAST); // push pyramid back out with cube underneath
+  delay(2000);
+  StopDrive();  
 } 
 
 void MSEBot::setSpeed(bool speed){
@@ -300,10 +424,10 @@ void MSEBot::setSpeed(bool speed){
   }
 }
 
-void MSEBot::closeClaw(){
+void MSEBot::closeClaw(){ // close claw
   _clawMotor.write(CUBE_INTAKE_CLOSE);
 }
 
-void MSEBot::openClaw(){
+void MSEBot::openClaw(){ // OPEN CLAW
   _clawMotor.write(CUBE_INTAKE_OPEN);
 }
